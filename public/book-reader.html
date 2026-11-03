@@ -28,6 +28,8 @@ body{background:var(--bg);font-family:system-ui,'Noto Sans Bengali',sans-serif;c
 #hud button:focus-visible{outline:2px solid #548e62}
 #hud .pct{font:700 11px system-ui;color:#365a40;min-width:37px;text-align:center}
 #hud .badge{padding:0 8px;font:600 11px system-ui;color:#647b69;border-right:1px solid #d3e0d2}
+#hud .offline-state{font:600 11px system-ui;color:#316b45;white-space:nowrap;padding:0 5px}
+#hud .offline-state[hidden]{display:none}
 @media(max-width:700px){#pages{gap:8px;padding:6px 2px 35px}.page{box-shadow:0 1px 5px #273e2725}#hud{bottom:9px;right:9px;padding:3px 4px;gap:3px}#hud button{height:29px;min-width:30px;font-size:17px}#hud .badge{padding:0 6px;font-size:10px}}
 </style>
 </head>
@@ -35,7 +37,7 @@ body{background:var(--bg);font-family:system-ui,'Noto Sans Bengali',sans-serif;c
 <div id="app">
   <div id="status" role="status" aria-live="polite"><div class="inner"><strong id="statusTitle">PDF রিডার প্রস্তুত হচ্ছে…</strong><span id="statusText">মূল বইটি একবার লোড হলে পৃষ্ঠা পরিবর্তন হবে তাৎক্ষণিক।</span><div class="progress"><div id="progressBar"></div></div><button id="retry" type="button" hidden>আবার চেষ্টা করুন</button><a href="./assets/ruqyah-book.pdf" target="_blank" rel="noopener">মূল PDF খুলুন</a></div></div>
   <div id="reader" role="region" aria-label="মূল PDF, টাচ ও মাউস দিয়ে স্ক্রল করুন" tabindex="0"><div id="pages"></div></div>
-  <div id="hud" aria-label="বইয়ের Zoom"><span class="badge" id="pageBadge">১ / ২৭২</span><button id="zoomOut" title="ছোট করুন" aria-label="Zoom out">−</button><span class="pct" id="zoomLevel">100%</span><button id="zoomIn" title="বড় করুন" aria-label="Zoom in">+</button></div>
+  <div id="hud" aria-label="বইয়ের Zoom"><span id="offlineBadge" class="offline-state" hidden aria-live="polite"></span><span class="badge" id="pageBadge">১ / ২৭২</span><button id="zoomOut" title="ছোট করুন" aria-label="Zoom out">−</button><span class="pct" id="zoomLevel">100%</span><button id="zoomIn" title="বড় করুন" aria-label="Zoom in">+</button></div>
 </div>
 <script>
 (()=>{'use strict';
@@ -50,6 +52,9 @@ const progressBar=document.getElementById('progressBar');
 const retry=document.getElementById('retry');
 const badge=document.getElementById('pageBadge');
 const zoomLabel=document.getElementById('zoomLevel');
+const offlineBadge=document.getElementById('offlineBadge');
+const PDF_CACHE='ruqyah-original-pdf-v1';
+const LIB_CACHE='ruqyah-pdfjs-lib-v33';
 const pdfUrl=new URL('./assets/ruqyah-book.pdf',document.baseURI).href;
 const allowedOrigin=location.origin==='null'?'*':location.origin;
 const TOTAL=272;
@@ -64,7 +69,7 @@ const rendered=new Map(),waiting=new Set(),queue=[];
 const MAX_CONCURRENT=2;
 const slots=[];
 let liveRenders=new Set();
-const stats={pdfDownloads:0,opens:0,navigations:0,painted:0,scriptLoads:0};
+const stats={pdfDownloads:0,opens:0,navigations:0,painted:0,scriptLoads:0,pdfCacheHits:0,pdfCacheWrites:0,libCacheHits:0,libCacheWrites:0};
 window.RuqyahPDFViewerDebug=stats;
 function notify(type,data={}){try{window.parent.postMessage({source:'ruqyah-custom-pdf-v32',type,...data},allowedOrigin)}catch(_){}}
 function setStatus(title,msg,failed=false){status.hidden=false;statusTitle.textContent=title;statusText.textContent=msg;retry.hidden=!failed;progressBar.style.width=failed?'100%':'8%';}
@@ -76,17 +81,95 @@ function setPage(n,notifyParent=true){
  if(notifyParent)notify('page',{page:n});
 }
 function loadScript(url){return new Promise((resolve,reject)=>{
- const s=document.createElement('script');s.src=url;s.async=true;s.crossOrigin='anonymous';
- const timer=setTimeout(()=>{s.remove();reject(new Error('PDF.js load timeout'))},13000);
- s.onload=()=>{clearTimeout(timer);stats.scriptLoads++;resolve()};
- s.onerror=()=>{clearTimeout(timer);s.remove();reject(new Error('PDF.js unavailable'))};
- document.head.append(s);
+ const script=document.createElement('script');script.src=url;script.async=true;
+ const timer=setTimeout(()=>{script.remove();reject(new Error('PDF.js load timeout'))},13000);
+ script.onload=()=>{clearTimeout(timer);stats.scriptLoads++;resolve()};
+ script.onerror=()=>{clearTimeout(timer);script.remove();reject(new Error('PDF.js unavailable'))};
+ document.head.append(script);
 })}
+// A first successful online open caches BOTH the PDF.js runtime and worker.
+// On later launches these assets are loaded from CacheStorage, not a CDN.
+async function cachedScriptBlob(url){
+ let cache=null;
+ try{if('caches'in window)cache=await caches.open(LIB_CACHE)}catch(e){console.warn('PDF.js cache unavailable',e)}
+ if(cache){
+  const saved=await cache.match(url).catch(()=>null);
+  if(saved){stats.libCacheHits++;return saved.blob()}
+ }
+ const response=await fetch(url,{mode:'cors',cache:'default'});
+ if(!response.ok)throw new Error('PDF.js asset HTTP '+response.status);
+ const blob=await response.blob();
+ if(cache)try{
+  await cache.put(url,new Response(blob,{headers:{'Content-Type':'text/javascript'}}));
+  stats.libCacheWrites++;
+ }catch(e){console.warn('PDF.js asset could not be cached',e)}
+ return blob;
+}
 async function getPdfJS(){
  if(window.pdfjsLib)return window.pdfjsLib;
  let error;
- for(const [url,worker] of scripts){try{await loadScript(url);if(window.pdfjsLib){window.pdfjsLib.GlobalWorkerOptions.workerSrc=worker;return window.pdfjsLib;}}catch(e){error=e;}}
+ for(const [url,worker] of scripts){
+  try{
+   const scriptBlob=await cachedScriptBlob(url);
+   const scriptURL=URL.createObjectURL(scriptBlob);
+   try{await loadScript(scriptURL)}finally{URL.revokeObjectURL(scriptURL)}
+   if(window.pdfjsLib){
+    // Worker is stored locally too. No CDN fetch on later offline launches.
+    let workerBlob;
+    try{workerBlob=await cachedScriptBlob(worker)}catch(e){
+     for(const [,otherWorker] of scripts)if(otherWorker!==worker){
+      try{workerBlob=await cachedScriptBlob(otherWorker);break}catch(_){}
+     }
+     if(!workerBlob)throw e;
+    }
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(workerBlob);
+    return window.pdfjsLib;
+   }
+  }catch(e){error=e;}
+ }
  throw error||new Error('PDF.js could not be loaded');
+}
+async function getPdfBytes(){
+ let cache=null;
+ try{if('caches'in window)cache=await caches.open(PDF_CACHE)}catch(e){console.warn('PDF offline cache unavailable',e)}
+ const isPdf=bytes=>bytes.byteLength>=100000&&
+    new TextDecoder().decode(bytes.slice(0,5))==='%PDF-';
+ if(cache){
+  const stored=await cache.match(pdfUrl).catch(()=>null);
+  if(stored){
+   const bytes=await stored.arrayBuffer();
+   if(isPdf(bytes)){
+    stats.pdfCacheHits++;
+    offlineBadge.hidden=false;
+    offlineBadge.textContent='\u2713 \u0985\u09ab\u09b2\u09be\u0987\u09a8';
+    return bytes;
+   }
+   await cache.delete(pdfUrl).catch(()=>{});
+  }
+ }
+ // First load or a cleared/evicted cache: fetch the original file exactly once.
+ const response=await fetch(pdfUrl,{cache:'default'});
+ if(!response.ok)throw new Error('PDF HTTP '+response.status);
+ const bytes=await response.arrayBuffer();
+ if(!isPdf(bytes))throw new Error('Invalid PDF asset');
+ stats.pdfDownloads++;
+ if(cache){
+  try{
+   await cache.put(pdfUrl,new Response(bytes.slice(0),{
+    headers:{'Content-Type':'application/pdf','Accept-Ranges':'bytes'}}));
+   stats.pdfCacheWrites++;
+   offlineBadge.hidden=false;
+   offlineBadge.textContent='\u2713 \u0985\u09ab\u09b2\u09be\u0987\u09a8';
+  }catch(e){
+   console.warn('PDF could not be saved offline',e);
+   offlineBadge.hidden=false;
+   offlineBadge.textContent='\u26a0 \u09b8\u09c7\u09ad \u09b9\u09df\u09a8\u09bf';
+  }
+ }else{
+  offlineBadge.hidden=false;
+  offlineBadge.textContent='\u26a0 \u09b8\u09c7\u09ad \u09b9\u09df\u09a8\u09bf';
+ }
+ return bytes;
 }
 function createSlots(){
  if(slots.length)return;
@@ -182,11 +265,7 @@ async function loadPDF(){
  setStatus('PDF রিডার চালু হচ্ছে…','বইটি প্রথমবার একবার ডাউনলোড হবে। এরপর পৃষ্ঠায় যেতে আর রিলোড হবে না।');
  loadPromise=(async()=>{
    const lib=await getPdfJS();
-   stats.pdfDownloads++;
-   const response=await fetch(pdfUrl,{cache:'default'});
-   if(!response.ok)throw new Error('PDF HTTP '+response.status);
-   const bytes=await response.arrayBuffer();
-   if(bytes.byteLength<100000||new TextDecoder().decode(bytes.slice(0,5))!=='%PDF-')throw new Error('Invalid PDF asset');
+   const bytes=await getPdfBytes();
    progressBar.style.width='70%';
    // Only ONE getDocument call. Never reset src or navigate to pdfUrl#page=N.
    const task=lib.getDocument({data:new Uint8Array(bytes),isEvalSupported:false});
@@ -241,7 +320,7 @@ reader.addEventListener('keydown',event=>{
 window.RuqyahPDFGoToPage=navigate;
 const fromURL=new URL(location.href).searchParams.get('page');
 if(fromURL)pendingPage=clamp(fromURL);
-notify('boot',{version:'v32',page:pendingPage});
+notify('boot',{version:'v33',page:pendingPage});
 loadPDF().catch(()=>{});
 })();
 </script>
