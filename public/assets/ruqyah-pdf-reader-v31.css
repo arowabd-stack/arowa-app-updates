@@ -1,66 +1,49 @@
-/* Chapter 21 only - v31: instant, continuous PDF.js canvas reader. */
-#chapter-21 .book-pdf-reader { width:100%!important; max-width:none!important; height: min(88dvh, 1140px)!important; min-height:620px!important; margin:0!important; }
-#chapter-21 .book-pdf-toolbar { position:relative;z-index:3;gap:10px!important;min-height:54px!important;padding:9px 12px!important; }
-#chapter-21 .book-pdf-toolbar button { flex:none; }
-#chapter-21 .book-pdf-toolbar .pdfjs-zoom-controls { display:flex;align-items:center;gap:5px;margin-left:5px; }
-#chapter-21 .book-pdf-toolbar .pdfjs-zoom-controls button { width:31px!important;height:30px!important;font-size:17px!important; }
-#chapter-21 .book-pdf-toolbar .pdfjs-zoom-label { font:600 12px/1 system-ui,sans-serif;color:#315b45;min-width:37px;text-align:center; }
-#chapter-21 #bookPdfFrame { display:none!important; }
-#chapter-21 .book-pdf-canvas-scroll { display:block; flex:1 1 auto; min-height:0; position:relative; overflow:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; scrollbar-gutter:stable; background:#e8eae7; touch-action:pan-x pan-y; }
-#chapter-21 .book-pdf-canvas-scroll[hidden] { display:none!important; }
-#chapter-21 .book-pdf-pages { position:relative; display:flex; flex-direction:column; align-items:center; gap:13px; padding:10px 8px 25px; min-width:100%; }
-#chapter-21 .pdfjs-page-slot { display:block; position:relative; width:var(--pdf-page-width,100%); aspect-ratio:580 / 815; flex:none; background:#fff; box-shadow:0 2px 11px rgba(17,36,25,.15); overflow:hidden; }
-#chapter-21 .pdfjs-page-slot .pdfjs-loading-page { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#718a79;font:500 15px/1.5 'SolaimanLipi','Noto Sans Bengali',sans-serif; }
-#chapter-21 .pdfjs-page-slot canvas { display:block; width:100%; height:100%; object-fit:fill; background:#fff; }
-#chapter-21 .pdfjs-page-slot.is-rendered .pdfjs-loading-page { display:none; }
-#chapter-21 .pdfjs-page-slot.is-active { outline:1px solid rgba(85,144,96,.14); }
-#chapter-21 .book-pdf-fallback { display:none!important; }
-#chapter-21 .book-pdf-message { min-height:360px; }
-@media (min-width:1101px) {
-  /* Fill the available workspace: wide book on the left, chapter index on the right. */
-  .app:has(#chapter-21.active) .workspace {padding-left:12px!important;padding-right:12px!important;}
-  .app:has(#chapter-21.active) .workspace-inner {max-width:none!important; width:100%!important;padding-left:12px!important;padding-right:12px!important;}
-  #chapter-21:not(.book-pdf-fullscreen) .chapter-main.book-scan-layout {
-    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(275px,305px)!important;
-    justify-content:stretch!important;align-items:start!important;
-    gap:14px!important;margin:0!important;padding:12px 10px 32px 0!important;
+/* Ruqyah v32 - the PDF is rendered inside book-reader.html, never by Chrome's PDF plugin. */
+#chapter-21 .book-pdf-reader{display:flex!important;flex-direction:column!important;width:100%!important;max-width:none!important;height:min(92dvh,1220px)!important;min-height:620px!important;margin:0!important;overflow:hidden!important}
+#chapter-21 .book-pdf-toolbar{position:relative;z-index:3;gap:9px!important;min-height:52px!important;padding:8px 10px!important;flex-wrap:nowrap!important}
+#chapter-21 .book-pdf-toolbar button{flex:none}
+#chapter-21 #bookPdfFrame{display:block!important;flex:1 1 auto!important;min-height:0!important;width:100%!important;height:100%!important;border:0!important;background:#e5eae5!important}
+#chapter-21 #bookPdfFrame[hidden]{display:none!important}
+#chapter-21 .book-pdf-message{display:none!important}
+#chapter-21 .book-pdf-fallback{display:none!important}
+#chapter-21 .book-scan-toolbar,#chapter-21 .book-side-rail{display:none!important}
+#chapter-21 .book-scan-pane{min-width:0!important}
+#chapter-21 .book-pdf-reader *{box-sizing:border-box}
+#chapter-21 .book-pdf-toolbar .book-page-counter{font-size:12px!important;white-space:nowrap!important;min-width:60px!important}
+#chapter-21 .book-pdf-toolbar #bookPdfOpen{margin-left:auto!important;white-space:nowrap}
+@media(min-width:1101px){
+  /* Desktop: align book close to left sidebar, right TOC visible without blank grid column. */
+  .app:has(#chapter-21.active) .workspace{padding-left:12px!important;padding-right:12px!important}
+  .app:has(#chapter-21.active) .workspace-inner{max-width:none!important;width:100%!important;padding-left:12px!important;padding-right:12px!important}
+  #chapter-21:not(.book-pdf-fullscreen) .chapter-main.book-scan-layout{
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(285px,340px)!important;
+    align-items:start!important;justify-content:stretch!important;
+    gap:15px!important;margin:0!important;padding:10px 8px 32px 0!important;
     width:100%!important;max-width:none!important;transform:none!important;
+    --ruqyah-book-center-offset:0px!important
   }
-  #chapter-21:not(.book-pdf-fullscreen) .book-scan-pane {
-    grid-column:1!important;grid-row:1!important;width:100%!important;min-width:0!important;
-    max-width:none!important;justify-self:stretch!important;margin:0!important;padding:0!important;
-    transform:none!important;
-  }
-  #chapter-21:not(.book-pdf-fullscreen) .book-toc {
-    grid-column:2!important;grid-row:1!important;width:100%!important;max-width:none!important;
-    min-width:0!important;justify-self:stretch!important;margin:0!important;transform:none!important;
-  }
-  #chapter-21 .book-pdf-reader {height: min(91dvh, 1220px)!important;min-height:650px!important;}
+  #chapter-21:not(.book-pdf-fullscreen) .book-scan-pane{grid-column:1!important;grid-row:1!important;width:100%!important;max-width:none!important;justify-self:stretch!important;margin:0!important;padding:0!important;transform:none!important}
+  #chapter-21:not(.book-pdf-fullscreen) .book-toc{grid-column:2!important;grid-row:1!important;width:100%!important;max-width:none!important;min-width:0!important;justify-self:stretch!important;margin:0!important;transform:none!important}
+  #chapter-21 .book-pdf-reader{height:min(93dvh,1240px)!important;min-height:660px!important}
+  #chapter-21 .book-fullscreen-btn,#chapter-21 .book-exit-fullscreen,#chapter-21 .book-mobile-topbar{display:none!important}
 }
-@media (min-width:781px) and (max-width:1100px) {
-  #chapter-21:not(.book-pdf-fullscreen) .chapter-main.book-scan-layout {
-    display:grid!important; grid-template-columns:minmax(0,1fr) minmax(210px,255px)!important;
-    justify-content:stretch!important;gap:10px!important;margin:0!important;padding:10px 6px 32px 0!important;transform:none!important;
-  }
-  #chapter-21:not(.book-pdf-fullscreen) .book-scan-pane {grid-column:1!important;grid-row:1!important;min-width:0!important;width:100%!important;max-width:none!important;transform:none!important;}
-  #chapter-21:not(.book-pdf-fullscreen) .book-toc {grid-column:2!important;grid-row:1!important;width:100%!important;max-width:none!important;transform:none!important;}
+@media(min-width:781px) and (max-width:1100px){
+  #chapter-21:not(.book-pdf-fullscreen) .chapter-main.book-scan-layout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(215px,275px)!important;gap:11px!important;align-items:start!important;margin:0!important;padding:10px 6px 30px 0!important;transform:none!important}
+  #chapter-21:not(.book-pdf-fullscreen) .book-scan-pane{grid-column:1!important;grid-row:1!important;min-width:0!important;width:100%!important;max-width:none!important;transform:none!important}
+  #chapter-21:not(.book-pdf-fullscreen) .book-toc{grid-column:2!important;grid-row:1!important;width:100%!important;max-width:none!important;transform:none!important}
+  #chapter-21 .book-mobile-topbar{display:none!important}
 }
-@media (max-width:780px) {
-  .app:has(#chapter-21.active) .workspace {padding-left:0!important;padding-right:0!important;}
-  .app:has(#chapter-21.active) .workspace-inner {padding-left:0!important;padding-right:0!important;max-width:none!important;width:100%!important;}
-  #chapter-21 .chapter-hero {padding-left:14px!important;padding-right:14px!important;}
-  #chapter-21 .chapter-main.book-scan-layout {width:100%!important;max-width:none!important;padding-left:0!important;padding-right:0!important;}
-  #chapter-21 .book-scan-pane {width:100%!important;max-width:none!important;padding:0!important;margin:0!important;}
-  #chapter-21 .book-pdf-reader {width:100%!important;height:calc(100dvh - 115px)!important;min-height:490px!important;border-radius:0!important;border-left:0!important;border-right:0!important;}
-  #chapter-21 .book-pdf-toolbar {gap:5px!important;padding:6px 6px!important;min-height:48px!important;flex-wrap:nowrap!important;}
-  #chapter-21 .book-pdf-toolbar-page-label {display:none!important;}
-  #chapter-21 .book-pdf-toolbar .book-page-counter {min-width:51px!important;white-space:nowrap;font-size:11px!important;}
-  #chapter-21 .book-pdf-toolbar .pdfjs-zoom-controls {margin-left:auto!important;gap:2px;}
-  #chapter-21 .book-pdf-toolbar .pdfjs-zoom-controls button {width:27px!important;height:29px!important;}
-  #chapter-21 .book-pdf-toolbar .pdfjs-zoom-label {min-width:32px;font-size:10px;}
-  #chapter-21 #bookPdfOpen {margin-left:0!important;padding:6px 5px!important;font-size:10px!important;}
-  #chapter-21 .book-pdf-pages {padding:5px 2px 18px;gap:8px;}
-  #chapter-21 .pdfjs-page-slot {box-shadow:0 1px 4px #0002;}
-  #chapter-21.book-pdf-fullscreen .book-pdf-reader {height:calc(100dvh - 58px)!important;min-height:0!important;}
-  #chapter-21.book-pdf-fullscreen .book-pdf-canvas-scroll {height:100%!important;touch-action:pan-x pan-y!important;}
+@media(max-width:780px){
+  .app:has(#chapter-21.active) .workspace{padding-left:0!important;padding-right:0!important}
+  .app:has(#chapter-21.active) .workspace-inner{padding-left:0!important;padding-right:0!important;max-width:none!important;width:100%!important}
+  #chapter-21 .chapter-hero{padding-left:14px!important;padding-right:14px!important}
+  #chapter-21 .chapter-main.book-scan-layout{width:100%!important;max-width:none!important;padding:0!important}
+  #chapter-21 .book-scan-pane{width:100%!important;max-width:none!important;padding:0!important;margin:0!important}
+  #chapter-21 .book-pdf-reader{width:100%!important;height:calc(100dvh - 108px)!important;min-height:500px!important;border-radius:0!important;border-left:0!important;border-right:0!important}
+  #chapter-21 .book-pdf-toolbar{gap:5px!important;padding:5px 7px!important;min-height:45px!important;flex-wrap:nowrap!important}
+  #chapter-21 .book-pdf-toolbar-page-label{display:none!important}
+  #chapter-21 .book-pdf-toolbar .book-page-counter{min-width:51px!important;white-space:nowrap!important;font-size:11px!important}
+  #chapter-21 #bookPdfOpen{margin-left:auto!important;padding:6px 7px!important;font-size:11px!important}
+  #chapter-21.book-pdf-fullscreen .book-pdf-reader{height:calc(100dvh - 56px)!important;min-height:0!important}
+  #chapter-21.book-pdf-fullscreen #bookPdfFrame{height:100%!important;touch-action:pan-x pan-y!important}
 }
