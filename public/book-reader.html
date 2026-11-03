@@ -13,7 +13,7 @@ body{background:var(--bg);font-family:system-ui,'Noto Sans Bengali',sans-serif;c
 #reader{flex:1 1 auto;width:100%;min-height:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable;touch-action:pan-x pan-y}
 #pages{--page-width:640px;min-width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;padding:12px 8px 44px}
 .page{position:relative;flex:none;width:var(--page-width);aspect-ratio:585 / 825;background:#fff;box-shadow:0 3px 15px rgba(30,50,35,.15);overflow:hidden;contain:layout paint style}
-.page canvas{display:block;width:100%;height:100%;background:white;object-fit:fill}
+.page canvas,.page img{display:block;width:100%;height:100%;background:white;object-fit:fill}
 .page:not(.painted)::before{content:'পৃষ্ঠা ' attr(data-page);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#7c9582;font:500 15px/1.4 system-ui}
 .page.current{outline:1px solid #7da88b55}
 #status{position:absolute;z-index:10;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:#f7faf7;color:#2a593e;text-align:center}
@@ -30,14 +30,18 @@ body{background:var(--bg);font-family:system-ui,'Noto Sans Bengali',sans-serif;c
 #hud .badge{padding:0 8px;font:600 11px system-ui;color:#647b69;border-right:1px solid #d3e0d2}
 #hud .offline-state{font:600 11px system-ui;color:#316b45;white-space:nowrap;padding:0 5px}
 #hud .offline-state[hidden]{display:none}
+#hud .pages-prepared{font:600 10px system-ui;color:#316b45;white-space:nowrap;padding:0 5px}
+#hud .pages-prepared[hidden]{display:none}
+#hud .reader-version{font:600 10px system-ui;color:#5a7560;white-space:nowrap;padding-right:3px}
 @media(max-width:700px){#pages{gap:8px;padding:6px 2px 35px}.page{box-shadow:0 1px 5px #273e2725}#hud{bottom:9px;right:9px;padding:3px 4px;gap:3px}#hud button{height:29px;min-width:30px;font-size:17px}#hud .badge{padding:0 6px;font-size:10px}}
+@media(max-width:700px){#hud .pages-prepared{position:absolute;right:4px;bottom:39px;background:#f7fbf7;padding:5px 9px;border:1px solid #d3e2d4;border-radius:99px;box-shadow:0 2px 10px #2042281b}#hud .reader-version{display:none}}
 </style>
 </head>
 <body>
 <div id="app">
   <div id="status" role="status" aria-live="polite"><div class="inner"><strong id="statusTitle">PDF রিডার প্রস্তুত হচ্ছে…</strong><span id="statusText">মূল বইটি একবার লোড হলে পৃষ্ঠা পরিবর্তন হবে তাৎক্ষণিক।</span><div class="progress"><div id="progressBar"></div></div><button id="retry" type="button" hidden>আবার চেষ্টা করুন</button><a href="./assets/ruqyah-book.pdf" target="_blank" rel="noopener">মূল PDF খুলুন</a></div></div>
   <div id="reader" role="region" aria-label="মূল PDF, টাচ ও মাউস দিয়ে স্ক্রল করুন" tabindex="0"><div id="pages"></div></div>
-  <div id="hud" aria-label="বইয়ের Zoom"><span id="offlineBadge" class="offline-state" hidden aria-live="polite"></span><span class="badge" id="pageBadge">১ / ২৭২</span><button id="zoomOut" title="ছোট করুন" aria-label="Zoom out">−</button><span class="pct" id="zoomLevel">100%</span><button id="zoomIn" title="বড় করুন" aria-label="Zoom in">+</button></div>
+  <div id="hud" aria-label="বইয়ের Zoom"><span class="reader-version" title="নতুন পৃষ্ঠা-ক্যাশ রিডার">v34</span><span id="offlineBadge" class="offline-state" hidden aria-live="polite"></span><span id="preparedBadge" class="pages-prepared" hidden aria-live="polite"></span><span class="badge" id="pageBadge">১ / ২৭২</span><button id="zoomOut" title="ছোট করুন" aria-label="Zoom out">−</button><span class="pct" id="zoomLevel">100%</span><button id="zoomIn" title="বড় করুন" aria-label="Zoom in">+</button></div>
 </div>
 <script>
 (()=>{'use strict';
@@ -53,8 +57,11 @@ const retry=document.getElementById('retry');
 const badge=document.getElementById('pageBadge');
 const zoomLabel=document.getElementById('zoomLevel');
 const offlineBadge=document.getElementById('offlineBadge');
+const preparedBadge=document.getElementById('preparedBadge');
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const LIB_CACHE='ruqyah-pdfjs-lib-v33';
+const PAGES_CACHE='ruqyah-rendered-book-pages-v34';
+const PREP_WIDTH=1120;
 const pdfUrl=new URL('./assets/ruqyah-book.pdf',document.baseURI).href;
 const allowedOrigin=location.origin==='null'?'*':location.origin;
 const TOTAL=272;
@@ -69,7 +76,10 @@ const rendered=new Map(),waiting=new Set(),queue=[];
 const MAX_CONCURRENT=2;
 const slots=[];
 let liveRenders=new Set();
-const stats={pdfDownloads:0,opens:0,navigations:0,painted:0,scriptLoads:0,pdfCacheHits:0,pdfCacheWrites:0,libCacheHits:0,libCacheWrites:0};
+const stats={pdfDownloads:0,opens:0,navigations:0,painted:0,scriptLoads:0,pdfCacheHits:0,pdfCacheWrites:0,libCacheHits:0,libCacheWrites:0,bitmapHits:0,bitmapWrites:0,backgroundPrepared:0};
+let pageCache=null,prepStarted=false,prepStopped=false,prepFailure='';
+let lastNavigationAt=0;
+const preparedPages=new Set();
 window.RuqyahPDFViewerDebug=stats;
 function notify(type,data={}){try{window.parent.postMessage({source:'ruqyah-custom-pdf-v32',type,...data},allowedOrigin)}catch(_){}}
 function setStatus(title,msg,failed=false){status.hidden=false;statusTitle.textContent=title;statusText.textContent=msg;retry.hidden=!failed;progressBar.style.width=failed?'100%':'8%';}
@@ -171,6 +181,95 @@ async function getPdfBytes(){
  }
  return bytes;
 }
+// In addition to the single saved PDF, keep a locally rendered image of each page.
+// This costs device storage, not a network request. Once all pages are prepared,
+// TOC jumps also avoid repeating PDF page rasterization.
+function pageKey(n){return new URL('./_ruqyah_local_pages_v34_/page-'+clamp(n)+'.webp',document.baseURI).href;}
+function showPreparation(){
+ preparedBadge.hidden=false;
+ preparedBadge.textContent=preparedPages.size===TOTAL?'✓ সব পৃষ্ঠা প্রস্তুত':'পৃষ্ঠা প্রস্তুত '+bn(preparedPages.size)+'/'+bn(TOTAL);
+ preparedBadge.title=prepFailure||'একবার তৈরি হওয়া পৃষ্ঠা এই ডিভাইসে সংরক্ষিত; প্রস্তুতি সম্পন্ন হলে সব সূচি দ্রুত খুলবে';
+}
+async function getPageCache(){
+ if(pageCache)return pageCache;
+ if(!('caches'in window))return null;
+ try{
+  const c=await caches.open(PAGES_CACHE);
+  pageCache=c;
+  for(const req of await c.keys()){
+   const m=/\/page-(\d+)\.webp$/.exec(new URL(req.url).pathname);
+   if(m&&+m[1]>=1&&+m[1]<=TOTAL)preparedPages.add(+m[1]);
+  }
+  showPreparation();return c;
+ }catch(e){console.warn('Rendered-page cache unavailable',e);return null}
+}
+function makeBlob(canvas){return new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.77));}
+async function storeRendered(n,canvas){
+ const c=await getPageCache();
+ if(!c||preparedPages.has(n)||prepStopped)return false;
+ try{
+  let target=canvas;
+  if(canvas.width!==PREP_WIDTH){
+   const small=document.createElement('canvas');small.width=PREP_WIDTH;
+   small.height=Math.round(canvas.height*PREP_WIDTH/canvas.width);
+   small.getContext('2d',{alpha:false}).drawImage(canvas,0,0,small.width,small.height);target=small;
+  }
+  const blob=await makeBlob(target);
+  if(target!==canvas){target.width=0;target.height=0}
+  if(!blob||blob.size<1000)throw new Error('Could not encode page bitmap');
+  await c.put(pageKey(n),new Response(blob,{headers:{'Content-Type':blob.type||'image/webp','Cache-Control':'no-store'}}));
+  preparedPages.add(n);stats.bitmapWrites++;showPreparation();return true;
+ }catch(e){
+  prepStopped=true;prepFailure='পৃষ্ঠা সেভ বন্ধ: স্টোরেজ সীমা বা অনুমতি সমস্যা';
+  showPreparation();console.warn('Page bitmap save failed',e);return false;
+ }
+}
+async function restoreRendered(n,atEpoch){
+ const c=await getPageCache();
+ if(!c||!preparedPages.has(n))return false;
+ let link;
+ try{
+  const r=await c.match(pageKey(n));
+  if(!r){preparedPages.delete(n);showPreparation();return false}
+  const blob=await r.blob();link=URL.createObjectURL(blob);
+  const img=new Image();img.src=link;
+  await img.decode();
+  if(atEpoch!==epoch||Math.abs(n-current)>5)return true;
+  slots[n-1]?.replaceChildren(img);
+  slots[n-1]?.classList.add('painted');
+  rendered.set(n,img);stats.bitmapHits++;
+  return true;
+ }catch(e){console.warn('Cached page failed, will render from PDF',n,e);preparedPages.delete(n);showPreparation();return false}
+ finally{if(link)URL.revokeObjectURL(link)}
+}
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function prepareEveryPage(){
+ if(prepStarted||!pdf)return;prepStarted=true;
+ const c=await getPageCache();if(!c)return;
+ for(let n=1;n<=TOTAL;n++){
+  if(prepStopped)return;
+  if(preparedPages.has(n))continue;
+  // Background work never delays an active page click or a visible scroll.
+  while(document.hidden||painting>0||queue.length>0||waiting.size>0||Date.now()-lastNavigationAt<1000){
+   if(prepStopped)return;await sleep(280);
+  }
+  let canvas;
+  try{
+   const pg=await pdf.getPage(n);
+   const unit=pg.getViewport({scale:1});
+   const vp=pg.getViewport({scale:PREP_WIDTH/unit.width});
+   canvas=document.createElement('canvas');canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);
+   const ctx=canvas.getContext('2d',{alpha:false});if(!ctx)throw Error('canvas unavailable');
+   await pg.render({canvasContext:ctx,viewport:vp,background:'#fff'}).promise;
+   if(!preparedPages.has(n)){
+    const ok=await storeRendered(n,canvas);if(ok)stats.backgroundPrepared++;
+   }
+  }catch(e){console.warn('Background page prepare failed',n,e)}
+  finally{if(canvas){canvas.width=0;canvas.height=0}}
+  await sleep(50);
+ }
+ showPreparation();
+}
 function createSlots(){
  if(slots.length)return;
  const frag=document.createDocumentFragment();
@@ -219,12 +318,14 @@ function flushQueue(){
   painting++;waiting.add(n);
   const myEpoch=epoch;
   (async()=>{
+   if(zoom<=1.3 && await restoreRendered(n,myEpoch))return;
    const page=await pdf.getPage(n);
    if(myEpoch!==epoch)return;
    const cssWidth=availableWidth();
    const ratio=Math.min(1.65,Math.max(1,window.devicePixelRatio||1));
    const vp0=page.getViewport({scale:1});
-   const viewport=page.getViewport({scale:cssWidth*ratio/vp0.width});
+   const paintWidth=Math.min(1600,Math.max(PREP_WIDTH,cssWidth*ratio));
+   const viewport=page.getViewport({scale:paintWidth/vp0.width});
    const canvas=document.createElement('canvas');
    canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
    canvas.style.width='100%';canvas.style.height='100%';
@@ -234,7 +335,8 @@ function flushQueue(){
    liveRenders.add(job);
    try{await job.promise;}finally{liveRenders.delete(job);}
    if(myEpoch!==epoch)return;
-   slots[n-1]?.append(canvas);slots[n-1]?.classList.add('painted');rendered.set(n,canvas);stats.painted++;
+   slots[n-1]?.replaceChildren(canvas);slots[n-1]?.classList.add('painted');rendered.set(n,canvas);stats.painted++;
+   if(zoom<=1.3&&!preparedPages.has(n))storeRendered(n,canvas).catch(()=>{});
   })().catch(e=>{if(!/cancel/i.test(String(e)))console.warn('PDF page render',n,e)}).finally(()=>{waiting.delete(n);painting--;flushQueue()});
  }
 }
@@ -244,6 +346,7 @@ function cancelPaints(){
  slots.forEach(e=>e.classList.remove('painted'));
 }
 function navigate(n){
+ lastNavigationAt=Date.now();
  n=clamp(n);pendingPage=n;stats.navigations++;
  setPage(n);notify('navigation',{page:n});
  if(!pdf){loadPDF().catch(()=>{});return;}
@@ -273,6 +376,8 @@ async function loadPDF(){
    if(pdf.numPages!==TOTAL)throw new Error('Expected 272 pages; got '+pdf.numPages);
    const first=await pdf.getPage(1),vp=first.getViewport({scale:1});baseW=vp.width;baseH=vp.height;
    createSlots();updateSize();status.hidden=true;
+   await getPageCache();
+   setTimeout(()=>prepareEveryPage().catch(e=>console.warn('Page preparation',e)),1800);
    notify('ready',{page:current,pages:TOTAL});
    const initial=pendingPage;navigate(initial);
    return pdf;
@@ -320,7 +425,7 @@ reader.addEventListener('keydown',event=>{
 window.RuqyahPDFGoToPage=navigate;
 const fromURL=new URL(location.href).searchParams.get('page');
 if(fromURL)pendingPage=clamp(fromURL);
-notify('boot',{version:'v33',page:pendingPage});
+notify('boot',{version:'v34-page-bitmaps',page:pendingPage});
 loadPDF().catch(()=>{});
 })();
 </script>
