@@ -1,6 +1,6 @@
 /* Ruqyah Reader v27: one PDF asset, cache-on-demand, byte-range support offline. */
 'use strict';
-const APP_VERSION='v27-20261103-pdf';
+const APP_VERSION='v28-20261103-pdf-fix';
 const SHELL_CACHE='ruqyah-pwa-shell-'+APP_VERSION;
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const PDF_URL=new URL('assets/ruqyah-book.pdf',self.registration.scope).href;
@@ -54,7 +54,7 @@ async function servePDF(event){
  // The explicit PDF Download button fetches and caches the entire original PDF for offline use.
  try{
    const fetched=await fetch(req);
-   if(fetched.ok&&!range&&fetched.status===200)
+   if(fetched.ok&&!range&&fetched.status===200&&/pdf|octet-stream/.test(fetched.headers.get('Content-Type')||''))
      event.waitUntil(cache.put(PDF_URL,fetched.clone()).catch(()=>{}));
    return fetched;
  }catch(e){return new Response('PDF unavailable offline. Download it once while online.',
