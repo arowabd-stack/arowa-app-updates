@@ -29,11 +29,23 @@
       ]
     },
     {
-      "source": "/assets/scans/(.*)",
+      "source": "/assets/ruqyah-book.pdf",
       "headers": [
         {
+          "key": "Content-Type",
+          "value": "application/pdf"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "inline; filename=\"Ruqyah-Abdullah-Al-Mahmud.pdf\""
+        },
+        {
           "key": "Cache-Control",
-          "value": "public, max-age=604800, stale-while-revalidate=86400"
+          "value": "public, max-age=86400, stale-while-revalidate=86400"
+        },
+        {
+          "key": "Accept-Ranges",
+          "value": "bytes"
         }
       ]
     },
