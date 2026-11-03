@@ -3,6 +3,24 @@
   "framework": null,
   "headers": [
     {
+      "source": "/assets/ruqyah-pdf-reader-v31.css",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/assets/ruqyah-pdf-reader-v31.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/",
       "headers": [
         {

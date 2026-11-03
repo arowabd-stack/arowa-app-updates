@@ -47,3 +47,43 @@
   #chapter-21.book-pdf-fullscreen .book-pdf-reader{height:calc(100dvh - 56px)!important;min-height:0!important}
   #chapter-21.book-pdf-fullscreen #bookPdfFrame{height:100%!important;touch-action:pan-x pan-y!important}
 }
+
+
+#ruqyah-canvas-root{--green:#397652;--bg:#e6ebe6;--muted:#6c806f}
+#ruqyah-canvas-root,#ruqyah-canvas-root *{box-sizing:border-box}
+
+#ruqyah-canvas-root{display:flex;flex-direction:column;width:100%;height:100%;min-height:0;position:relative}
+#ruqyah-canvas-root #reader{flex:1 1 auto;width:100%;min-height:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable;touch-action:pan-x pan-y}
+#ruqyah-canvas-root #pages{--page-width:640px;min-width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;padding:12px 8px 44px}
+#ruqyah-canvas-root .page{position:relative;flex:none;width:var(--page-width);aspect-ratio:585 / 825;background:#fff;box-shadow:0 3px 15px rgba(30,50,35,.15);overflow:hidden;contain:layout paint style}
+#ruqyah-canvas-root .page canvas,#ruqyah-canvas-root .page img{display:block;width:100%;height:100%;background:white;object-fit:fill}
+#ruqyah-canvas-root .page:not(.painted)::before{content:'পৃষ্ঠা ' attr(data-page);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#7c9582;font:500 15px/1.4 system-ui}
+#ruqyah-canvas-root .page.current{outline:1px solid #7da88b55}
+#ruqyah-canvas-root #status{position:absolute;z-index:10;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:#f7faf7;color:#2a593e;text-align:center}
+#ruqyah-canvas-root #status[hidden]{display:none!important}
+#ruqyah-canvas-root #status .inner{display:flex;max-width:360px;flex-direction:column;align-items:center;gap:11px;line-height:1.65}
+#ruqyah-canvas-root #status strong{font-size:18px}#ruqyah-canvas-root #status span{font-size:13px;color:#607968}
+#ruqyah-canvas-root #status a,#ruqyah-canvas-root #status button{border:1px solid #cadbce;background:#fff;color:#2b704b;padding:9px 15px;border-radius:10px;text-decoration:none;font:600 13px system-ui;cursor:pointer}
+#ruqyah-canvas-root #status .progress{height:5px;width:min(230px,70vw);border-radius:99px;background:#dde8db;overflow:hidden}
+#ruqyah-canvas-root #status .progress>div{height:100%;background:#51936e;width:10%;transition:width .2s}
+#ruqyah-canvas-root #hud{position:absolute;z-index:4;right:15px;bottom:13px;display:flex;align-items:center;gap:7px;border:1px solid #dbe7d9;border-radius:999px;background:#f9fcf9ec;box-shadow:0 3px 16px #254a2e28;padding:5px 7px;user-select:none}
+#ruqyah-canvas-root #hud button{height:32px;min-width:35px;border:0;border-radius:999px;background:#e8f1e9;color:#29523c;font:700 19px/1 system-ui;cursor:pointer}
+#ruqyah-canvas-root #hud button:focus-visible{outline:2px solid #548e62}
+#ruqyah-canvas-root #hud .pct{font:700 11px system-ui;color:#365a40;min-width:37px;text-align:center}
+#ruqyah-canvas-root #hud .badge{padding:0 8px;font:600 11px system-ui;color:#647b69;border-right:1px solid #d3e0d2}
+#ruqyah-canvas-root #hud .offline-state{font:600 11px system-ui;color:#316b45;white-space:nowrap;padding:0 5px}
+#ruqyah-canvas-root #hud .offline-state[hidden]{display:none}
+#ruqyah-canvas-root #hud .pages-prepared{font:600 10px system-ui;color:#316b45;white-space:nowrap;padding:0 5px}
+#ruqyah-canvas-root #hud .pages-prepared[hidden]{display:none}
+#ruqyah-canvas-root #hud .reader-version{font:600 10px system-ui;color:#5a7560;white-space:nowrap;padding-right:3px}
+@media(max-width:700px){#ruqyah-canvas-root #pages{gap:8px;padding:6px 2px 35px}#ruqyah-canvas-root .page{box-shadow:0 1px 5px #273e2725}#ruqyah-canvas-root #hud{bottom:9px;right:9px;padding:3px 4px;gap:3px}#ruqyah-canvas-root #hud button{height:29px;min-width:30px;font-size:17px}#ruqyah-canvas-root #hud .badge{padding:0 6px;font-size:10px}}
+@media(max-width:700px){#ruqyah-canvas-root #hud .pages-prepared{position:absolute;right:4px;bottom:39px;background:#f7fbf7;padding:5px 9px;border:1px solid #d3e2d4;border-radius:99px;box-shadow:0 2px 10px #2042281b}#ruqyah-canvas-root #hud .reader-version{display:none}}
+
+
+#chapter-21 .book-reader-version-v35{display:inline-flex;align-items:center;white-space:nowrap;color:#276a46;background:#edf5ec;border:1px solid #d7e7d6;border-radius:999px;padding:5px 8px;font:700 11px system-ui,sans-serif}
+#chapter-21 #ruqyah-canvas-root{flex:1 1 auto;position:relative;min-height:0;width:100%;height:100%;overflow:hidden;background:#e6ebe6;font-family:system-ui,'Noto Sans Bengali',sans-serif;color:#25452e}
+#chapter-21 #ruqyah-canvas-root #reader{position:relative;min-height:0;height:100%;width:100%;overflow:auto}
+#chapter-21 #ruqyah-canvas-root #status{position:absolute;z-index:10}
+#chapter-21 #bookPdfFrame,#chapter-21 #bookPdfMessage,#chapter-21 #bookPdfFallback{display:none!important}
+@media(min-width:781px){#chapter-21 .book-mobile-toc-close{display:none!important}}
+@media(max-width:780px){#chapter-21 .book-reader-version-v35{font-size:9px;padding:4px 6px}#chapter-21 #bookPdfOpen{display:none!important}}
