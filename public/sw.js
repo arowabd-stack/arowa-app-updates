@@ -1,6 +1,6 @@
 /* Ruqyah Reader v27: one PDF asset, cache-on-demand, byte-range support offline. */
 'use strict';
-const APP_VERSION='v31-20261103-instant-pdf-canvas';
+const APP_VERSION='v33-20261103-persistent-offline-reader';
 const SHELL_CACHE='ruqyah-pwa-shell-'+APP_VERSION;
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const PDF_URL=new URL('assets/ruqyah-book.pdf',self.registration.scope).href;
@@ -8,7 +8,7 @@ const HOME=new URL('index.html',self.registration.scope).href;
 const FALLBACK=new URL('offline.html',self.registration.scope).href;
 const SHELL_FILES=['index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png',
 'icons/icon-maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','offline.html','check.html',
-'assets/ruqyah-pdf-reader-v31.js','assets/ruqyah-pdf-reader-v31.css'];
+'assets/ruqyah-pdf-reader-v31.js','assets/ruqyah-pdf-reader-v31.css','book-reader.html'];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(SHELL_CACHE);
@@ -75,7 +75,7 @@ self.addEventListener('fetch',event=>{
      if(response.ok&&new URL(req.url).pathname.endsWith('/')){
        const c=await caches.open(SHELL_CACHE);event.waitUntil(c.put(HOME,response.clone()));}
      return response;
-   }catch(e){return (await caches.match(HOME))||(await caches.match(FALLBACK))||Response.error();}
+   }catch(e){return (await caches.match(req,{ignoreSearch:true}))||(await caches.match(HOME))||(await caches.match(FALLBACK))||Response.error();}
   })());return;
  }
  if(u.pathname.endsWith('/manifest.webmanifest')||u.pathname.endsWith('/offline.html')||u.pathname.includes('/icons/')){
@@ -85,7 +85,7 @@ self.addEventListener('fetch',event=>{
 
 // Cache PDF.js assets after first use so installed PWAs can reopen the viewer.
 // The same pinned API+worker version must be used to avoid worker mismatches.
-const PDFJS_CACHE='ruqyah-pdfjs-lib-v31';
+const PDFJS_CACHE='ruqyah-pdfjs-lib-v33';
 const PDFJS_RESOURCES=new Set([
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
@@ -98,6 +98,7 @@ self.addEventListener('fetch',event=>{
  event.respondWith((async()=>{
   const cache=await caches.open(PDFJS_CACHE);
   const saved=await cache.match(req);
+  if(saved)return saved;
   try{
    const response=await fetch(req);
    if(response.ok||response.type==='opaque')event.waitUntil(cache.put(req,response.clone()).catch(()=>{}));
