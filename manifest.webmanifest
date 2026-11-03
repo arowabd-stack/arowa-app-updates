@@ -1,0 +1,49 @@
+{
+  "id": "./",
+  "name": "রুকইয়াহ শরইয়্যাহ - Ruqyah Reader",
+  "short_name": "রুকইয়াহ",
+  "description": "কুরআন, মাসনুন দোয়া ও ২৭২ পৃষ্ঠার মূল রুকইয়াহ বই",
+  "lang": "bn",
+  "dir": "ltr",
+  "start_url": "./#chapter-21",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f9f6",
+  "theme_color": "#215b43",
+  "orientation": "any",
+  "categories": [
+    "books",
+    "education",
+    "lifestyle"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "মূল রুকইয়াহ বই",
+      "url": "./#chapter-21"
+    },
+    {
+      "name": "কমন আয়াত",
+      "url": "./#chapter-1"
+    }
+  ]
+}
