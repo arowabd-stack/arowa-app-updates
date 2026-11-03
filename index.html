@@ -13083,7 +13083,7 @@ body:has(#chapter-21.active) .font-example{display:none!important}
  <h2>রুকইয়াহ — আব্দুল্লাহ আল মাহমুদ</h2>
  <p>মূল বইয়ের সম্পূর্ণ ২৭২ পৃষ্ঠার PDF · রিডার ভিউ</p>
  <div class="chapter-hero-footer"><span class="ch-meta-pages">মূল বই · ২৭২ পৃষ্ঠা</span></div></header>
- <div class="chapter-main book-scan-layout">
+ <div class="chapter-main book-scan-layout" style="--ruqyah-book-center-offset: 0px;">
    <aside class="book-toc" aria-label="বইয়ের ক্লিকযোগ্য সূচিপত্র">
     <details id="bookTocDetails" open><summary>বইয়ের সূচিপত্র <span>সূচি থেকে পৃষ্ঠা খুলুন</span></summary>
 <div class="book-toc-tools" aria-label="পড়ার অগ্রগতি ও ব্যক্তিগত নোট">
@@ -14876,51 +14876,6 @@ refreshNoteShortcut();renderSaved();
 })();
 </script>
 
-<script id="ruqyah-v22-center-position-js">
-(()=>{'use strict';
-  // In desktop chapter 21, keep the book close to the main left sidebar.
-  // The user-approved desktop position is equivalent to a -140px shift at ~1650px.
-  // For smaller desktops, clamp this shift so neither the book nor the TOC is clipped.
-  const chapter=document.getElementById('chapter-21');
-  const layout=chapter?.querySelector('.chapter-main.book-scan-layout');
-  const scan=chapter?.querySelector('.book-scan-pane');
-  const toc=chapter?.querySelector('.book-toc');
-  if(!chapter || !layout || !scan || !toc)return;
-  const sidebar=document.querySelector('.app > .sidebar');
-  let scheduled=false;
-  function positionBook(){
-    scheduled=false;
-    if(window.innerWidth < 1001 || !chapter.classList.contains('active') || chapter.classList.contains('book-pdf-fullscreen')){
-      layout.style.removeProperty('--ruqyah-book-center-offset');
-      return;
-    }
-    // Measure with translation cleared; otherwise the offset can accumulate on resize.
-    layout.style.setProperty('--ruqyah-book-center-offset','0px');
-    const bookRect=scan.getBoundingClientRect();
-    const tocRect=toc.getBoundingClientRect();
-    if(!bookRect.width || !tocRect.width)return;
-    const sidebarRect=sidebar?.getBoundingClientRect();
-    const sideRight=sidebarRect?.width > 0 ? sidebarRect.right : 0;
-    const minMove=sideRight+12-bookRect.left;
-    const maxMove=window.innerWidth-12-tocRect.right;
-    // Prefer the exact position requested; stay inside the available desktop area.
-    const desired=-140;
-    const move=minMove <= maxMove ? Math.max(minMove,Math.min(maxMove,desired)) : maxMove;
-    layout.style.setProperty('--ruqyah-book-center-offset',Math.round(move)+'px');
-  }
-  function schedule(){
-    if(scheduled)return;
-    scheduled=true;
-    requestAnimationFrame(()=>requestAnimationFrame(positionBook));
-  }
-  window.addEventListener('resize',schedule,{passive:true});
-  window.addEventListener('hashchange',schedule,{passive:true});
-  new MutationObserver(schedule).observe(chapter,{attributes:true,attributeFilter:['class']});
-  document.fonts?.ready?.then(schedule).catch(()=>{});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});
-  else schedule();
-})();
-</script>
 <script id="ruqyah-pwa-v27-pdf-download">
 (()=>{'use strict';
 const PDF_URL=new URL('./assets/ruqyah-book.pdf',document.baseURI).href;
