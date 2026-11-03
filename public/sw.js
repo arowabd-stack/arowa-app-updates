@@ -1,13 +1,14 @@
 /* Ruqyah Reader v27: one PDF asset, cache-on-demand, byte-range support offline. */
 'use strict';
-const APP_VERSION='v30-20261103-pdf-toc-nav-fix';
+const APP_VERSION='v31-20261103-instant-pdf-canvas';
 const SHELL_CACHE='ruqyah-pwa-shell-'+APP_VERSION;
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const PDF_URL=new URL('assets/ruqyah-book.pdf',self.registration.scope).href;
 const HOME=new URL('index.html',self.registration.scope).href;
 const FALLBACK=new URL('offline.html',self.registration.scope).href;
 const SHELL_FILES=['index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png',
-'icons/icon-maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','offline.html','check.html'];
+'icons/icon-maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','offline.html','check.html',
+'assets/ruqyah-pdf-reader-v31.js','assets/ruqyah-pdf-reader-v31.css'];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(SHELL_CACHE);
@@ -80,4 +81,27 @@ self.addEventListener('fetch',event=>{
  if(u.pathname.endsWith('/manifest.webmanifest')||u.pathname.endsWith('/offline.html')||u.pathname.includes('/icons/')){
   event.respondWith((async()=>{const c=await caches.open(SHELL_CACHE);return (await c.match(req))||(await fetch(req));})());
  }
+});
+
+// Cache PDF.js assets after first use so installed PWAs can reopen the viewer.
+// The same pinned API+worker version must be used to avoid worker mismatches.
+const PDFJS_CACHE='ruqyah-pdfjs-lib-v31';
+const PDFJS_RESOURCES=new Set([
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
+]);
+self.addEventListener('fetch',event=>{
+ const req=event.request;
+ if(req.method!=='GET'||!PDFJS_RESOURCES.has(req.url))return;
+ event.respondWith((async()=>{
+  const cache=await caches.open(PDFJS_CACHE);
+  const saved=await cache.match(req);
+  try{
+   const response=await fetch(req);
+   if(response.ok||response.type==='opaque')event.waitUntil(cache.put(req,response.clone()).catch(()=>{}));
+   return response;
+  }catch(e){return saved||Response.error();}
+ })());
 });
