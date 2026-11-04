@@ -25,6 +25,21 @@ const css='<style id="ruqyah-v38-static-canvas">\n'
 if(!html.includes('</head>'))throw new Error('Missing HTML head');
 html=html.replace('</head>',css+'\n</head>');
 if(html.includes('id="bookPdfFrame"')||html.includes('id="ruqyah-v36-custom-canvas-bridge"')||!html.includes('id="bookCanvasMount"'))throw new Error('Native PDF viewer survived build');
+
+// Persistent, accessible return link for the standalone 21-chapter reader.
+// Inject into the generated reader, not the original 16 MB source or the homepage.
+const homeLink='<a id="ruqyah-home-back" href="./index.html" aria-label="হোমপেজে ফিরে যান"><span aria-hidden="true">←</span><span>হোমপেজ</span></a>';
+const homeCss='<style id="ruqyah-home-navigation">\n'
++'#ruqyah-home-back{position:fixed;left:max(12px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom));z-index:2147483000;display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:999px;background:#155b43;color:#fff;text-decoration:none;box-shadow:0 4px 18px rgba(0,0,0,.20);font:700 14px/1.5 system-ui,\"Noto Sans Bengali\",sans-serif;max-width:calc(100vw - 30px);white-space:nowrap}\n'
++'#ruqyah-home-back:hover{background:#0d4531}#ruqyah-home-back:focus-visible{outline:3px solid #eac867;outline-offset:3px}\n'
++'@media (max-width:560px){#ruqyah-home-back{padding:9px 12px;font-size:13px}}\n'
++'</style>';
+const bodyTag=html.match(/<body\b[^>]*>/i);
+if(!bodyTag)throw new Error('Ruqyah reader body tag is missing');
+html=html.replace(bodyTag[0],bodyTag[0]+'\n'+homeLink);
+html=html.replace('</head>',homeCss+'\n</head>');
+if(!html.includes('id="ruqyah-home-back"') || !html.includes('href="./index.html"'))throw new Error('Homepage return link was not injected');
+
 writeFileSync(target,html,'utf8');
 if(statSync(target).size<10000000)throw new Error('Built app unexpectedly small');
 writeFileSync('public/viewer-version.json',JSON.stringify({version:'v38',renderer:'direct-pdfjs-canvas',nativePdfIframe:false,build:'static-html'},null,2)+'\n','utf8');
