@@ -1,6 +1,6 @@
 /* Ruqyah Reader v27: one PDF asset, cache-on-demand, byte-range support offline. */
 'use strict';
-const APP_VERSION='v35-20261103-direct-no-native-pdf';
+const APP_VERSION='v36-20261104-integrated-custom-canvas';
 const SHELL_CACHE='ruqyah-pwa-shell-'+APP_VERSION;
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const PDF_URL=new URL('assets/ruqyah-book.pdf',self.registration.scope).href;
@@ -8,7 +8,7 @@ const HOME=new URL('index.html',self.registration.scope).href;
 const FALLBACK=new URL('offline.html',self.registration.scope).href;
 const SHELL_FILES=['index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png',
 'icons/icon-maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','offline.html','check.html',
-'assets/ruqyah-pdf-reader-v31.js','assets/ruqyah-pdf-reader-v31.css','book-reader.html'];
+'book-reader.html'];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(SHELL_CACHE);
@@ -85,7 +85,7 @@ self.addEventListener('fetch',event=>{
 
 // Cache PDF.js assets after first use so installed PWAs can reopen the viewer.
 // The same pinned API+worker version must be used to avoid worker mismatches.
-const PDFJS_CACHE='ruqyah-pdfjs-lib-v33';
+const PDFJS_CACHE='ruqyah-pdfjs-lib-v36';
 const PDFJS_RESOURCES=new Set([
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',

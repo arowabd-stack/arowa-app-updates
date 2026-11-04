@@ -425,7 +425,7 @@ reader.addEventListener('keydown',event=>{
 window.RuqyahPDFGoToPage=navigate;
 const fromURL=new URL(location.href).searchParams.get('page');
 if(fromURL)pendingPage=clamp(fromURL);
-notify('boot',{version:'v34-page-bitmaps',page:pendingPage});
+notify('boot',{version:'v36-integrated-canvas',page:pendingPage});
 loadPDF().catch(()=>{});
 })();
 </script>

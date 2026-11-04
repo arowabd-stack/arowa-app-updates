@@ -1,14 +1,24 @@
-# Ruqyah PWA v31 — small update (no PDF download needed)
+# Ruqyah Shariah — Complete PWA v36 (Integrated Custom Canvas PDF Reader)
 
-This is an OFFLINE patch kit for existing Ruqyah PWA v29/v30.
+This ZIP is a **complete** static Vercel deploy project. The 272-page PDF file is included unchanged.
 
-1. Extract the zip.
-2. Open PATCH_INDEX.html in Chrome or Safari on your computer.
-3. Select the original `public/index.html` from your EXISTING PWA project.
-4. Press "নতুন index.html তৈরি করো", then download `index.html`.
-5. Replace the existing `public/index.html` in your project with the newly generated file. If your browser names it `index (1).html`, rename it to `index.html`.
-6. Copy `public/sw.js` and `public/assets/ruqyah-pdf-reader-v31.js` and `public/assets/ruqyah-pdf-reader-v31.css` from this kit into the matching folders in your project.
-7. Keep the existing `public/assets/ruqyah-book.pdf`, icons, manifest, and vercel.json. Deploy the COMPLETE project to Vercel. Do not deploy just this patch zip.
-8. Hard refresh / reload installed PWA after publishing.
+## Deploy
+1. Unzip the archive.
+2. Import the extracted folder into Vercel, or upload this entire folder.
+3. Framework = Other, Build Command = empty, Output Directory = `public` (already set in `vercel.json`).
+4. Deploy and open `/#chapter-21`. Look for the green **নিজস্ব রিডার v36** marker.
+5. First time needs internet to fetch the PDF and PDF.js; the PWA and reader cache them.
+6. Do not clear browser site data: stored PDF, notes, last-read and pages may be removed.
 
-This patch changes one v30 inline script to load v31 PDF.js reader, and adds the CSS link. It does not rewrite the Qur'an text, the PDF or user Notes. If the old index.html is missing, use the v31 Full Deploy ZIP instead.
+## Key files
+- `public/index.html`: all 21 chapters, with the old native PDF iframe navigation replaced by the custom bridge.
+- `public/book-reader.html`: the custom PDF.js Canvas reader; offline PDF and rendered page caching.
+- `public/assets/ruqyah-book.pdf`: original unmodified 272-page PDF (11.9 MB).
+- `public/sw.js`: app shell + original PDF caching and range support.
+- `public/manifest.webmanifest`, `public/icons/*`: installable PWA assets.
+- `vercel.json`: Vercel configuration with output directory `public`.
+
+## Important
+The browser PDF plugin is not the chapter 21 reader. The page hosts a CUSTOM HTML Canvas PDF renderer. The PDF download link deliberately downloads the source file. The first visit to a page may take a moment to render, and full 272-page offline preparation depends on available browser storage.
+
+Source chapter 1–20 content is unchanged from the v30 GitHub index (blob SHA 31c18084f467ee4625d7a029a86541196d3d70eb). Only chapter 21 reader integration and deployment shell were changed.
