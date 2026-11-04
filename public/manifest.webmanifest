@@ -1,11 +1,11 @@
 {
   "id": "./",
-  "name": "রুকইয়াহ শরইয়্যাহ - Ruqyah Reader",
+  "name": "রুকইয়াহ শরইয়্যাহ ও হিজামা গাইড",
   "short_name": "রুকইয়াহ",
-  "description": "কুরআন, মাসনুন দোয়া ও ২৭২ পৃষ্ঠার মূল রুকইয়াহ বই",
+  "description": "রুকইয়াহ পাঠ এবং হিজামা সম্পর্কে প্রশ্ন, পরিচিতি ও সতর্কতা",
   "lang": "bn",
   "dir": "ltr",
-  "start_url": "./#chapter-21",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f6f9f6",
@@ -38,12 +38,12 @@
   ],
   "shortcuts": [
     {
-      "name": "মূল রুকইয়াহ বই",
-      "url": "./#chapter-21"
+      "name": "রুকইয়াহ রিডার",
+      "url": "./reader.html#chapter-21"
     },
     {
-      "name": "কমন আয়াত",
-      "url": "./#chapter-1"
+      "name": "হিজামা গাইড",
+      "url": "./hijama-guide.html"
     }
   ]
 }
