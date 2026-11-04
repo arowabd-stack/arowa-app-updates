@@ -1,6 +1,6 @@
 /* Ruqyah Reader v27: one PDF asset, cache-on-demand, byte-range support offline. */
 'use strict';
-const APP_VERSION='v40-20261104-reader-home-link';
+const APP_VERSION='v41-20261104-hijama-cards-editable-questions';
 const SHELL_CACHE='ruqyah-pwa-shell-'+APP_VERSION;
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const PDF_URL=new URL('assets/ruqyah-book.pdf',self.registration.scope).href;
@@ -8,7 +8,7 @@ const HOME=new URL('index.html',self.registration.scope).href;
 const FALLBACK=new URL('offline.html',self.registration.scope).href;
 const SHELL_FILES=['index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png',
 'icons/icon-maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','offline.html','check.html',
-'book-reader.html','reader.html','hijama-guide.html','assets/book21-direct-v38.js'];
+'book-reader.html','reader.html','hijama-guide.html','hijama-book.html','hijama-questions.html','data/hijama-answers.json','assets/book21-direct-v38.js'];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(SHELL_CACHE);
