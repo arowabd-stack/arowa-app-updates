@@ -1,7 +1,7 @@
 import {readFileSync,writeFileSync,statSync} from 'node:fs';
 // Generate a static 21-chapter index BEFORE deployment, not with document.write in Chrome.
 const source='public/app-source-v36.html';
-const target='public/index.html';
+const target='public/reader.html';
 let html=readFileSync(source,'utf8');
 if(statSync(source).size<10000000)throw new Error('Original 21-chapter book app is incomplete');
 const bridge=/<script\s+id="ruqyah-v36-custom-canvas-bridge">[\s\S]*?<\/script>/gi;
@@ -28,4 +28,4 @@ if(html.includes('id="bookPdfFrame"')||html.includes('id="ruqyah-v36-custom-canv
 writeFileSync(target,html,'utf8');
 if(statSync(target).size<10000000)throw new Error('Built app unexpectedly small');
 writeFileSync('public/viewer-version.json',JSON.stringify({version:'v38',renderer:'direct-pdfjs-canvas',nativePdfIframe:false,build:'static-html'},null,2)+'\n','utf8');
-console.log('[Ruqyah v38] Static Canvas app built, native PDF iframe removed: '+statSync(target).size+' bytes');
+console.log('[Ruqyah v38] Static Canvas reader built, native PDF iframe removed: '+statSync(target).size+' bytes');
