@@ -28,11 +28,13 @@ if(html.includes('id="bookPdfFrame"')||html.includes('id="ruqyah-v36-custom-canv
 
 // Persistent, accessible return link for the standalone 21-chapter reader.
 // Inject into the generated reader, not the original 16 MB source or the homepage.
-const homeLink='<a id="ruqyah-home-back" href="./index.html" aria-label="হোমপেজে ফিরে যান"><span aria-hidden="true">←</span><span>হোমপেজ</span></a>';
+const homeLink='<nav id="ruqyah-global-nav" aria-label="ওয়েবসাইটে ফিরে যান"><a id="ruqyah-home-back" href="./index.html" aria-label="হোমপেজে ফিরে যান"><span aria-hidden="true">←</span><span>হোমপেজ</span></a><a id="ruqyah-hijama-link" href="./hijama-guide.html" aria-label="হিজামা গাইডে যান">হিজামা</a></nav>';
 const homeCss='<style id="ruqyah-home-navigation">\n'
-+'#ruqyah-home-back{position:fixed;left:max(12px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom));z-index:2147483000;display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:999px;background:#155b43;color:#fff;text-decoration:none;box-shadow:0 4px 18px rgba(0,0,0,.20);font:700 14px/1.5 system-ui,\"Noto Sans Bengali\",sans-serif;max-width:calc(100vw - 30px);white-space:nowrap}\n'
-+'#ruqyah-home-back:hover{background:#0d4531}#ruqyah-home-back:focus-visible{outline:3px solid #eac867;outline-offset:3px}\n'
-+'@media (max-width:560px){#ruqyah-home-back{padding:9px 12px;font-size:13px}}\n'
++'#ruqyah-global-nav{position:fixed;left:max(12px,env(safe-area-inset-left));bottom:max(15px,env(safe-area-inset-bottom));z-index:2147483000;display:flex;align-items:center;gap:5px;padding:4px;border:1px solid #b9d7c4;border-radius:999px;background:#f8fdf9;box-shadow:0 5px 24px #143c3052;max-width:calc(100vw - 24px);font:700 13px/1.45 system-ui,"Noto Sans Bengali",sans-serif}\n'
++'#ruqyah-global-nav a{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;min-height:34px;padding:7px 11px;border-radius:999px;text-decoration:none;color:#155b43}\n'
++'#ruqyah-global-nav #ruqyah-home-back{background:#155b43;color:#fff}\n'
++'#ruqyah-global-nav a:hover{filter:brightness(.94)}#ruqyah-global-nav a:focus-visible{outline:3px solid #dcb95e;outline-offset:2px}\n'
++'@media(max-width:560px){#ruqyah-global-nav{font-size:12px;bottom:max(10px,env(safe-area-inset-bottom))}#ruqyah-global-nav a{padding:6px 9px;min-height:32px}}\n'
 +'</style>';
 const bodyTag=html.match(/<body\b[^>]*>/i);
 if(!bodyTag)throw new Error('Ruqyah reader body tag is missing');
