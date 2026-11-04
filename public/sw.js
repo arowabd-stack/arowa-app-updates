@@ -1,6 +1,6 @@
 /* Ruqyah Reader v27: one PDF asset, cache-on-demand, byte-range support offline. */
 'use strict';
-const APP_VERSION='v36-20261104-integrated-custom-canvas';
+const APP_VERSION='v37-20261104-direct-canvas-no-iframe';
 const SHELL_CACHE='ruqyah-pwa-shell-'+APP_VERSION;
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const PDF_URL=new URL('assets/ruqyah-book.pdf',self.registration.scope).href;
@@ -8,7 +8,7 @@ const HOME=new URL('index.html',self.registration.scope).href;
 const FALLBACK=new URL('offline.html',self.registration.scope).href;
 const SHELL_FILES=['index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png',
 'icons/icon-maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','offline.html','check.html',
-'book-reader.html'];
+'book-reader.html','app-source-v36.html','assets/book21-direct-v37.js'];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(SHELL_CACHE);
@@ -69,6 +69,7 @@ self.addEventListener('fetch',event=>{
  // Query parameters force PDF-plugin page reloads. They must still match
  // the single offline-cached PDF file, otherwise offline navigation 404s.
  if(u.pathname===new URL(PDF_URL).pathname){event.respondWith(servePDF(event));return;}
+ if(u.pathname.endsWith('/app-source-v36.html')||u.pathname.endsWith('/assets/book21-direct-v37.js')){event.respondWith((async()=>{const c=await caches.open(SHELL_CACHE);return (await c.match(req))||fetch(req)})());return;}
  if(req.mode==='navigate'){
   event.respondWith((async()=>{
    try{const response=await fetch(req);
