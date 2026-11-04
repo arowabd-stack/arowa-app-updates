@@ -86,5 +86,6 @@
       ]
     }
   ],
-  "outputDirectory": "public"
+  "outputDirectory": "public",
+  "buildCommand": "node build-v38.mjs"
 }

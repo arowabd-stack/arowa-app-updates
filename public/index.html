@@ -1,4 +1,4 @@
-<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>রুকইয়াহ শরইয়্যাহ · ২১টি অধ্যায়</title><style>body{font:600 16px/1.7 system-ui,'Noto Sans Bengali',sans-serif;background:#f5f9f4;color:#27523b;text-align:center;padding:15vh 16px}#error{color:#9b3232}</style></head><body>
+<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>রুকইয়াহ শরইয়্যাহ · v38 Canvas Reader</title><style>body{font:600 16px/1.7 system-ui,'Noto Sans Bengali',sans-serif;background:#f5f9f4;color:#27523b;text-align:center;padding:15vh 16px}#error{color:#9b3232}</style></head><body>
 <p id="bootStatus">রুকইয়াহ রিডার খুলছে…</p><p id="error" role="alert"></p>
 <script>
 (async()=>{
@@ -11,10 +11,10 @@ try{
  const scan=html.match(/const scanKeys=(\{[^\n;]+\});/);
  if(!oldBridge.test(html)||!oldFrame.test(html)||!scan)throw Error('মূল অ্যাপের সংস্করণ মেলেনি।');
  const scripts='<script>window.__ruqyahScanKeys='+scan[1]+';<\/script>'+
-               '<script src="./assets/book21-direct-v37.js"><\/script>';
+               '<script src="./assets/book21-direct-v38.js"><\/script>';
  html=html.replace(oldBridge,scripts);
- html=html.replace(oldFrame,'<div id="bookCanvasMount" role="region" aria-label="সরাসরি PDF Canvas রিডার, একটানা স্ক্রল"></div>');
- html=html.replace('নিজস্ব রিডার v36','নিজস্ব রিডার v37');
+ html=html.replace(oldFrame,'<div id="bookCanvasMount" data-ruqyah-viewer="v38-fallback" role="region" aria-label="সরাসরি PDF Canvas রিডার, একটানা স্ক্রল"></div>');
+ html=html.replace('নিজস্ব রিডার v36','নিজস্ব রিডার v38');
  html=html.replace('</head>','<style id="book37-style">#chapter-21 #bookCanvasMount{display:block;flex:1 1 auto;min-height:0;width:100%;height:100%;background:#e6ebe6;overflow:hidden}#chapter-21 #bookScanStage{display:flex;flex-direction:column}#chapter-21 .book-pdf-message{display:none!important}</style></head>');
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('bootStatus').textContent='রিডার খোলা যায়নি';document.getElementById('error').textContent=String(e.message||e);console.error(e)}
