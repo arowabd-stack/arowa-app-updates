@@ -29,7 +29,7 @@
 <div class="training-lock-icon"><img class="hijama-icon hijama-icon-treatment" src="assets/hijama-treatment.png" alt="" aria-hidden="true" decoding="async"></div>
 <h2 id="trainingLockTitle">প্রশিক্ষণ ভিডিও দেখতে পাসওয়ার্ড দিন</h2>
 <p>এটি প্রশিক্ষণার্থীদের জন্য সংরক্ষিত বিভাগ।</p>
-<form id="loginForm"><label for="passcode">পাসওয়ার্ড</label><div class="training-pass-row"><input id="passcode" type="password" required autocomplete="current-password" placeholder="পাসওয়ার্ড লিখুন" maxlength="128"><button type="submit" id="loginButton">প্রবেশ করুন</button></div></form>
+<form id="loginForm"><label for="passcode">পাসওয়ার্ড</label><div class="training-pass-row"><input id="passcode" type="password" required autocomplete="current-password" placeholder="পাসওয়ার্ড লিখুন" maxlength="128"><button type="submit" id="loginButton">প্রবেশ করুন</button></div><label class="training-remember"><input id="rememberDevice" type="checkbox" checked>এই ডিভাইসে ৩০ দিন লগইন মনে রাখুন</label></form>
 <p id="loginMessage" class="training-message" role="status"></p>
 </section>
 <section class="training-workspace" id="trainingWorkspace" hidden aria-label="ভিডিও প্লেলিস্ট">
@@ -37,6 +37,10 @@
 <section class="training-playback">
 <div class="training-player-frame">
 <video id="trainingPlayer" playsinline controls preload="metadata" hidden></video>
+<div class="training-telegram-panel" id="trainingTelegramPanel" hidden>
+ <iframe id="trainingTelegramFrame" title="Telegram ক্লাস ভিডিও পোস্ট" src="about:blank" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; encrypted-media"></iframe>
+ <div class="training-telegram-footer"><a id="trainingTelegramLink" href="#" target="_blank" rel="noopener noreferrer">ভিডিওটি Telegram-এ খুলুন</a><small>কিছু Telegram ভিডিও ওয়েবসাইটে প্লে না-ও হতে পারে।</small></div>
+</div>
 <div id="trainingPlaceholder" class="training-player-placeholder">
 <span class="training-big-play"><i class="hgi hgi-play" aria-hidden="true"></i></span>
 <h2 id="placeholderTitle">ক্লাস নির্বাচন করুন</h2>
@@ -44,11 +48,11 @@
 <a id="sourceLink" href="#" data-training-source hidden target="_blank" rel="noopener noreferrer">Telegram চ্যানেল খুলুন</a>
 </div>
 </div>
-<div class="training-now"><div><span class="eyebrow">NOW PLAYING</span><h2 id="nowTitle">ক্লাস নির্বাচন করুন</h2><p id="nowMeta">হিজামা প্রশিক্ষণ</p></div><div class="training-next-row"><button type="button" id="previousClass">আগের ক্লাস</button><button type="button" id="nextClass">পরের ক্লাস</button></div></div>
-<p class="training-notice" id="trainingNotice">Telegram-এর চ্যানেল লিংক থেকে সব ক্লাসের ভিডিও সরাসরি স্ট্রিম করা যাচ্ছে না। ক্লাসভিত্তিক MP4/HLS লিংক যুক্ত হলে এখানে ভিডিও চলবে এবং শেষ হলে পরেরটি চালু হবে।</p>
+<div class="training-now"><div><span class="eyebrow">NOW PLAYING</span><h2 id="nowTitle">ক্লাস নির্বাচন করুন</h2><p id="nowMeta">হিজামা প্রশিক্ষণ</p></div><div class="training-next-row"><button type="button" id="previousClass">আগের ক্লাস</button><button type="button" id="nextClass">পরের ক্লাস</button><button type="button" id="offlineDownload" disabled title="সরাসরি MP4 লিংক না থাকলে ডাউনলোড করা যায় না">অফলাইন ডাউনলোড</button></div></div>
+<p class="training-notice" id="trainingNotice">১–১৩৭টি ক্লাসের পোস্ট যোগ করা আছে। Telegram পোস্ট ওয়েবসাইটে দেখানো হবে; Telegram-এর সীমাবদ্ধতায় autoplay এবং অফলাইন ডাউনলোড কেবল পোস্ট লিংক থেকে সম্ভব নয়।</p>
 </section>
 <aside class="training-sidebar">
-<div class="training-sidebar-top"><div><h2>ভিডিও প্লেলিস্ট</h2><p id="trainingCount">ক্লাস ১–১৩৭</p></div><span id="connectedCount" class="training-connected">০টি সংযুক্ত</span></div>
+<div class="training-sidebar-top"><div><h2>ভিডিও প্লেলিস্ট</h2><p id="trainingCount">ক্লাস ১–১৩৭</p></div><span id="connectedCount" class="training-connected">১৩৭টি পোস্ট</span></div>
 <label class="training-search"><span class="sr-only">ক্লাস খুঁজুন</span><input type="search" id="videoSearch" placeholder="ক্লাস নম্বর বা নাম খুঁজুন"></label>
 <div id="videoList" class="training-video-list" role="list"></div>
 <div class="training-sidebar-footer"><a href="#" data-training-source hidden target="_blank" rel="noopener noreferrer">ভিডিওর Telegram চ্যানেল খুলুন</a></div>
