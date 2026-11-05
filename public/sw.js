@@ -1,6 +1,6 @@
 /* Ruqyah Reader v27: one PDF asset, cache-on-demand, byte-range support offline. */
 'use strict';
-const APP_VERSION='v41-20261104-hijama-cards-editable-questions';
+const APP_VERSION='v45-20261105-visual-release';
 const SHELL_CACHE='ruqyah-pwa-shell-'+APP_VERSION;
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const PDF_URL=new URL('assets/ruqyah-book.pdf',self.registration.scope).href;
@@ -8,7 +8,7 @@ const HOME=new URL('index.html',self.registration.scope).href;
 const FALLBACK=new URL('offline.html',self.registration.scope).href;
 const SHELL_FILES=['index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png',
 'icons/icon-maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','offline.html','check.html',
-'book-reader.html','reader.html','hijama-guide.html','hijama-book.html','hijama-questions.html','data/hijama-answers.json','assets/book21-direct-v38.js'];
+'book-reader.html','reader.html','hijama-guide.html','hijama-book.html','hijama-questions.html','data/hijama-answers.json','assets/book21-direct-v38.js','assets/library.css','assets/library.js','assets/hugeicons.css','assets/ruqyah-redesign.css','assets/ruqyah-redesign.js','assets/reader-settings.js','assets/pdf-shell.css','assets/questions.js','assets/question-editor.js','assets/fonts/hind-siliguri.ttf','assets/fonts/hind-siliguri-semibold.ttf','assets/fonts/kalpurush.ttf','assets/fonts/noorehuda.ttf','assets/fonts/hugeicons.ttf'];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(SHELL_CACHE);
@@ -70,6 +70,9 @@ self.addEventListener('fetch',event=>{
  // the single offline-cached PDF file, otherwise offline navigation 404s.
  if(u.pathname===new URL(PDF_URL).pathname){event.respondWith(servePDF(event));return;}
  if(u.pathname.endsWith('/assets/book21-direct-v38.js')){event.respondWith((async()=>{const c=await caches.open(SHELL_CACHE);return (await c.match(req))||fetch(req)})());return;}
+ if(u.pathname.includes('/assets/hijama/')||u.pathname.includes('/assets/fonts/')||u.pathname.includes('/assets/ruqyah-fonts/')||/\/(?:assets\/[^/]+\.(?:css|js)|data\/hijama-book\.json)$/.test(u.pathname)){
+  event.respondWith((async()=>{const c=await caches.open(SHELL_CACHE);try{const r=await fetch(req);if(r.ok)event.waitUntil(c.put(req,r.clone()).catch(()=>{}));return r}catch(e){return (await c.match(req))||Response.error()}})());return;
+ }
  if(req.mode==='navigate'){
   event.respondWith((async()=>{
    try{const response=await fetch(req);

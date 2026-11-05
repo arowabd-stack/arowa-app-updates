@@ -54,9 +54,9 @@ body{display:flex;flex-direction:column}
 #status .inner{max-width:420px}
 @media(max-width:650px){#hijama-reader-nav{min-height:0;gap:5px;padding:7px 8px}#hijama-reader-nav a{font-size:12px;padding:5px 8px}#hijama-reader-nav .nav-title{display:none}#hud .offline-state,#hud .pages-prepared{display:none!important}#hud{bottom:8px;gap:3px;padding:5px}}
 </style>
-</head>
+<script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem("library-theme"))||"light"}catch(e){}</script><link rel="stylesheet" href="assets/hugeicons.css"><link rel="stylesheet" href="assets/pdf-shell.css"></head>
 <body>
-<nav id="hijama-reader-nav" aria-label="ওয়েবসাইট নেভিগেশন"><a href="./index.html">⌂ হোমপেজ</a><a href="./hijama-guide.html">হিজামা বিভাগ</a><a href="./hijama-questions.html">প্রশ্নোত্তর</a><span class="nav-title">হিজামার মূল বই · ১২৬ পৃষ্ঠা</span></nav>
+<nav id="hijama-reader-nav" aria-label="ওয়েবসাইট নেভিগেশন"><a href="./index.html"><i class="hgi hgi-home-01" aria-hidden="true"></i> হোমপেজ</a><a href="./hijama-guide.html">হিজামা বিভাগ</a><a href="./hijama-questions.html">প্রশ্নোত্তর</a><span class="nav-title">হিজামার মূল বই · ১২৬ পৃষ্ঠা</span></nav>
 <div id="app">
   <div id="status" role="status" aria-live="polite"><div class="inner"><strong id="statusTitle">PDF রিডার প্রস্তুত হচ্ছে…</strong><span id="statusText">মূল বইটি একবার লোড হলে পৃষ্ঠা পরিবর্তন হবে তাৎক্ষণিক।</span><div class="progress"><div id="progressBar"></div></div><button id="retry" type="button" hidden>আবার চেষ্টা করুন</button><label class="file-label" for="localPdf">নিজের PDF বেছে পড়ুন</label><input id="localPdf" type="file" accept=".pdf,application/pdf"><small>ফাইলটি শুধুই এই ডিভাইসে পড়া হবে; সার্ভারে আপলোড হবে না।</small></div></div>
   <div id="reader" role="region" aria-label="মূল PDF, টাচ ও মাউস দিয়ে স্ক্রল করুন" tabindex="0"><div id="pages"></div></div>

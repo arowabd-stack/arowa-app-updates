@@ -1,0 +1,11 @@
+@font-face{font-family:LibraryBangla;src:url(fonts/hind-siliguri.ttf) format('truetype');font-display:swap}
+:root{--pdf-paper:#f8f7f3;--pdf-surface:#fff;--pdf-ink:#203c33;--pdf-line:#e3e7df;--pdf-green:#276151}
+html[data-theme=dark]{color-scheme:dark;--pdf-paper:#18251f;--pdf-surface:#202e27;--pdf-ink:#d9e2d5;--pdf-line:#354438;--pdf-green:#b2cba7}
+body{background:var(--pdf-paper);color:var(--pdf-ink);font-family:LibraryBangla,system-ui,sans-serif}
+#standalone-home-nav{padding:6px 12px;gap:7px;min-height:58px;background:var(--pdf-paper);border-color:var(--pdf-line)}
+#standalone-home-nav a,#status a,#status button{font:14px/1.5 LibraryBangla,system-ui,sans-serif;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--pdf-line);background:var(--pdf-surface);color:var(--pdf-green);border-radius:10px;padding:8px 12px}
+#standalone-home-nav a:first-child{background:#173f35;color:#fff}#standalone-home-nav .hgi{font-size:20px}#status{background:var(--pdf-paper);color:var(--pdf-ink)}#status span{color:var(--pdf-ink);opacity:.8}#hud{background:var(--pdf-surface);color:var(--pdf-ink);border-color:var(--pdf-line);padding:5px;gap:5px}#hud button{min-width:44px;min-height:44px;color:var(--pdf-green);background:var(--pdf-paper)}#hud :is(.pct,.badge){color:var(--pdf-ink)}#hud .reader-version{display:none}#reader:focus-visible{outline:2px solid #b79c65;outline-offset:-2px}
+@media(max-width:380px){#standalone-home-nav{gap:4px;padding:5px 8px}#standalone-home-nav a{padding:7px 8px;font-size:13px;gap:5px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+#hijama-reader-nav{background:var(--pdf-paper);border-color:var(--pdf-line);padding:7px 12px;gap:7px;min-height:58px}#hijama-reader-nav a{font:14px/1.5 LibraryBangla,system-ui,sans-serif;min-height:44px;display:inline-flex;align-items:center;gap:7px;background:var(--pdf-surface);color:var(--pdf-green);border-color:var(--pdf-line);padding:8px 12px}#hijama-reader-nav a:first-child{background:#173f35;color:white}#hijama-reader-nav .nav-title{color:var(--pdf-ink)}
