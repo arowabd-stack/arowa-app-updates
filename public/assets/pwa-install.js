@@ -4,6 +4,7 @@
 try{if(window.top!==window.self)return}catch{return}
 const landing=document.body?.dataset?.pwaInstallLanding==='true'||location.pathname.endsWith('/install.html');
 const shareUrl=new URL('install.html',new URL('./',location.href)).href;
+const appUrl=new URL('index.html',new URL('./',location.href)).href;
 const INSTALLED='ruqyah-pwa-installed-v1';
 const match=window.matchMedia?.('(display-mode: standalone)');
 const installed=()=>!!(match?.matches||navigator.standalone===true||window.matchMedia?.('(display-mode: fullscreen)').matches);
@@ -47,6 +48,7 @@ function syncHeader(){
   if(before)header.insertBefore(button,before);else header.append(button);
  }
  const share=isKnownInstalled();
+ updateLandingUI();
  button.textContent=share?'অ্যাপ শেয়ার করুন':'ইনস্টল';
  button.setAttribute('aria-label',share?'অ্যাপের ইনস্টল লিংক শেয়ার করুন':'এই ডিভাইসে অ্যাপ ইনস্টল করুন');
  button.setAttribute('title',share?'অ্যাপ শেয়ার করুন':'অ্যাপ ইনস্টল করুন');
@@ -62,11 +64,52 @@ async function shareApp(){
  if(input){input.value=shareUrl;input.hidden=false;input.focus();input.select();announce('লিংকটি নির্বাচন করে কপি করুন।');}
  else window.prompt('এই ইনস্টল লিংকটি শেয়ার করুন:',shareUrl);
 }
+function openApp(){
+ closeDialog();
+ // Browsers do not provide a guaranteed programmatic way to launch a separately
+ // installed PWA window. Navigate to its home URL; compatible OS/browser
+ // link-capture settings may hand this link to the installed app.
+ window.location.assign(appUrl);
+}
+function updateLandingUI(){
+ const installButton=document.getElementById('shareLandingInstall');
+ if(!installButton)return;
+ const active=isKnownInstalled();
+ installButton.textContent=active?'অ্যাপ খুলুন':'ইনস্টল করুন';
+ installButton.setAttribute('aria-label',active?'ইনস্টল করা অ্যাপ খুলুন':'অ্যাপ ইনস্টল করার উপায় দেখুন');
+}
+function showOpenApp(){
+ closeDialog();
+ backdrop=make('div','pwa-install-overlay');
+ backdrop.setAttribute('aria-hidden','true');
+ dialog=make('section','pwa-install-card');
+ dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');
+ dialog.setAttribute('aria-labelledby','pwaInstallTitle');
+ const heading=make('div','pwa-install-header');
+ const img=make('img','pwa-install-icon');img.src=new URL('icons/icon-192.png',new URL('./',location.href)).href;
+ img.alt='';img.width=46;img.height=46;
+ const copy=make('div','pwa-install-copy');
+ copy.append(make('div','pwa-install-eyebrow','অ্যাপ প্রস্তুত'),
+  make('h2','','অ্যাপটি ইনস্টল হয়েছে'));
+ copy.querySelector('h2').id='pwaInstallTitle';
+ copy.append(make('p','','এখন অ্যাপ খুলুন অথবা অন্যদের সঙ্গে শেয়ার করুন।'));
+ const close=make('button','pwa-install-close','×');close.type='button';
+ close.setAttribute('aria-label','পপআপ বন্ধ করুন');close.addEventListener('click',closeDialog);
+ heading.append(img,copy,close);
+ const actions=make('div','pwa-install-actions');
+ const share=make('button','pwa-install-later','শেয়ার করুন');share.type='button';share.addEventListener('click',shareApp);
+ const open=make('button','pwa-install-primary','অ্যাপ খুলুন');open.type='button';open.addEventListener('click',openApp);
+ actions.append(share,open);
+ dialog.append(heading,actions);
+ document.body.append(backdrop,dialog);
+ updateLandingUI();
+ open.focus({preventScroll:true});
+}
 function showInstall(){
- if(installed()){
-  closeDialog();syncHeader();
+ if(isKnownInstalled()){
+  syncHeader();showOpenApp();
   const target=document.getElementById('installLandingStatus');
-  if(target)target.textContent='এই ডিভাইসে অ্যাপটি ইতিমধ্যে ইনস্টল করা আছে।';
+  if(target)target.textContent='অ্যাপটি ইনস্টল করা আছে। খুলতে নিচের বাটন ব্যবহার করুন।';
   return;
  }
  if(dialog)return;
@@ -114,7 +157,12 @@ function showInstall(){
    status.textContent='ব্রাউজারের ইনস্টল বাটন পাওয়া যায়নি। নিচের ধাপগুলো অনুসরণ করুন।';
   }
  });
- actions.append(later,action);
+ const manualDone=make('button','pwa-install-manual-done','ইনস্টল করেছি');
+ manualDone.type='button';manualDone.hidden=true;
+ manualDone.addEventListener('click',()=>{setInstalled();syncHeader();showOpenApp();});
+ const showManual=()=>{manualDone.hidden=steps.hidden};
+ action.addEventListener('click',()=>{if(!deferredPrompt)showManual()});
+ actions.append(later,manualDone,action);
  dialog.append(header,steps,status,actions);
  document.body.append(backdrop,dialog);
  close.focus({preventScroll:true});
@@ -126,11 +174,11 @@ window.addEventListener('beforeinstallprompt',event=>{
  if(action){action.disabled=false;action.textContent='অ্যাপ ইনস্টল করুন';}
 });
 window.addEventListener('appinstalled',()=>{
- setInstalled();closeDialog();syncHeader();
+ setInstalled();syncHeader();showOpenApp();
  const status=document.getElementById('installLandingStatus');
- if(status)status.textContent='অ্যাপ ইনস্টল হয়েছে। এখন চাইলে অন্যদের শেয়ার করুন।';
+ if(status)status.textContent='অ্যাপটি ইনস্টল হয়েছে। এখন অ্যাপ খুলতে পারবেন।';
 });
-match?.addEventListener?.('change',()=>{if(installed()){closeDialog();syncHeader()}});
+match?.addEventListener?.('change',()=>{if(installed()){setInstalled();syncHeader();showOpenApp()}});
 window.addEventListener('pageshow',syncHeader);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncHeader()});
 function init(){
@@ -138,7 +186,7 @@ function init(){
  const shareButton=document.getElementById('shareLandingShare');
  if(shareButton)shareButton.addEventListener('click',shareApp);
  const installButton=document.getElementById('shareLandingInstall');
- if(installButton)installButton.addEventListener('click',showInstall);
+ if(installButton)installButton.addEventListener('click',()=>{if(isKnownInstalled())openApp();else showInstall()});
  const urlInput=document.getElementById('shareLinkInput');
  if(urlInput){urlInput.value=shareUrl;urlInput.hidden=true}
  if(landing&&!isKnownInstalled()){
@@ -148,6 +196,7 @@ function init(){
  }else if(landing&&isKnownInstalled()){
   const status=document.getElementById('installLandingStatus');
   if(status)status.textContent='অ্যাপটি এই ডিভাইসে ইনস্টল করা আছে।';
+  window.setTimeout(showOpenApp,550);
  }
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
