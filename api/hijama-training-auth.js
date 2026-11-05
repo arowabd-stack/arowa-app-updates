@@ -1,6 +1,7 @@
 import {createHmac,timingSafeEqual} from 'node:crypto';
 const cookieName='hijama_training_session';
-const maxAge=12*60*60;
+const defaultMaxAge=12*60*60;
+const rememberedMaxAge=30*24*60*60;
 const json=(res,status,obj)=>res.status(status).setHeader('Cache-Control','no-store').setHeader('Content-Type','application/json; charset=utf-8').end(JSON.stringify(obj));
 const secureCompare=(a,b)=>{if(typeof a!=='string'||typeof b!=='string')return false;const x=Buffer.from(a),y=Buffer.from(b);return x.length===y.length&&timingSafeEqual(x,y)};
 const makeSign=v=>createHmac('sha256',process.env.HIJAMA_TRAINING_SESSION_KEY||'').update(v).digest('hex');
@@ -26,6 +27,7 @@ export default async function handler(req,res){
  }
  const body=typeof req.body==='object'&&req.body?req.body:{};
  if(!secureCompare(body.password,process.env.HIJAMA_TRAINING_PASSWORD))return json(res,401,{error:'পাসওয়ার্ড সঠিক নয়।'});
+ const maxAge=body.remember===true?rememberedMaxAge:defaultMaxAge;
  const expires=(Date.now()+maxAge*1000).toString(36);
  const token=expires+'.'+makeSign(expires);
  res.setHeader('Set-Cookie',cookieName+'='+token+'; HttpOnly; Secure; SameSite=Strict; Path=/api/hijama-training; Max-Age='+maxAge);
