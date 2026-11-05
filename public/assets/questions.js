@@ -1,20 +1,21 @@
 (()=>{
  'use strict';
  const input=document.getElementById('questionSearch');
- const items=[...document.querySelectorAll('.question')];
+ let items=[...document.querySelectorAll('.question')];
  const groups=[...document.querySelectorAll('.group')];
  const count=document.getElementById('questionsCount');
- items.forEach(item=>{const icon=document.createElement('i');icon.className='hgi hgi-arrow-right-01 question-chevron';icon.setAttribute('aria-hidden','true');item.querySelector('summary').append(icon)});
+ function decorate(){items=[...document.querySelectorAll('.question')];items.forEach(item=>{const summary=item.querySelector('summary');if(!summary||summary.querySelector('.question-chevron'))return;const icon=document.createElement('i');icon.className='hgi hgi-arrow-right-01 question-chevron';icon.setAttribute('aria-hidden','true');summary.append(icon)})}
+ decorate();
  const categoryLinks=[...document.querySelectorAll('.category-nav a')];
  const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
  const normalize=s=>s.normalize('NFC').toLocaleLowerCase().replace(/[য়য়]/g,'য়').replace(/\s+/g,' ').trim();
  const clear=document.createElement('button');clear.type='button';clear.className='question-clear';clear.hidden=true;clear.innerHTML='<i class="hgi hgi-cancel-01" aria-hidden="true"></i>';clear.setAttribute('aria-label','প্রশ্নের অনুসন্ধান মুছুন');input.parentElement.append(clear);
  function filter(){
-  const q=normalize(input.value);let hits=0;
+  items=[...document.querySelectorAll('.question')];const q=normalize(input.value);let hits=0;
   for(const item of items){const haystack=item.querySelector('summary').textContent+' '+(item.querySelector('.current-answer')?.textContent||'');const yes=!q||normalize(haystack).includes(q);item.hidden=!yes;if(yes)hits++}
-  groups.forEach(g=>g.hidden=![...g.querySelectorAll('.question')].some(x=>!x.hidden));
+  groups.forEach(g=>{g.hidden=!!q&&![...g.querySelectorAll('.question')].some(x=>!x.hidden)});
   document.getElementById('noResults').hidden=hits!==0;
-  count.textContent=bn(hits)+'টি প্রশ্ন'+(q?' পাওয়া গেছে':' · ৯টি বিভাগ');clear.hidden=!q;
+  count.textContent=bn(hits)+'টি প্রশ্ন'+(q?' পাওয়া গেছে':' · ১০টি বিভাগ');clear.hidden=!q;
  }
  input.addEventListener('input',filter);
  input.addEventListener('keydown',e=>{if(e.key==='Escape'){input.value='';filter()}});
@@ -32,5 +33,7 @@
  window.addEventListener('scroll',()=>{if(!scrollTick){scrollTick=true;requestAnimationFrame(syncCategory)}},{passive:true});
  window.addEventListener('resize',syncCategory);syncCategory();
  function reveal(){const el=document.getElementById(location.hash.slice(1));if(el?.classList.contains('question')){input.value='';filter();el.open=true;el.scrollIntoView({block:'start'})}}
- window.addEventListener('hashchange',reveal);reveal();
+ window.addEventListener('hashchange',reveal);
+ document.addEventListener('hijama:reader-questions-updated',()=>{decorate();filter();reveal();syncCategory()});
+ reveal();
 })();
