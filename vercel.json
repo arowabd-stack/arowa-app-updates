@@ -150,5 +150,10 @@
     }
   ],
   "outputDirectory": "public",
-  "buildCommand": "node build-v38.mjs"
+  "buildCommand": "node build-v38.mjs",
+  "functions": {
+    "api/hijama-playlist-player.js": {
+      "includeFiles": "lib/hijama-playlist-player.html"
+    }
+  }
 }
