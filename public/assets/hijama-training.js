@@ -5,8 +5,32 @@ const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
 const lock=el('lockScreen'),work=el('trainingWorkspace'),player=el('trainingPlayer'),
  placeholder=el('trainingPlaceholder'),list=el('videoList'),notice=el('trainingNotice');
 const source=el('sourceLink'),admin=el('trainingAdmin');
+const telegramPanel=el('trainingTelegramPanel'),telegramFrame=el('trainingTelegramFrame'),telegramLink=el('trainingTelegramLink'),downloadButton=el('offlineDownload');
 let videos=new Map(),number=0,hls=null,sourceFolder='',authenticated=false,minimumClasses=137,catalogSyncBusy=false;
 let last=0;try{last=Number(localStorage.getItem('hijama-training-last')||0)}catch{}
+const progressKey='hijama-training-playback-position-v1';
+let savedPositions={};try{
+ const stored=JSON.parse(localStorage.getItem(progressKey)||'{}');
+ if(stored&&typeof stored==='object'&&!Array.isArray(stored))savedPositions=stored;
+}catch{}
+let progressSavedAt=0;
+function saveNativeProgress(finished=false){
+ const entry=videos.get(number);
+ if(!entry||!['mp4','hls'].includes(entry.type))return;
+ const time=Number(player.currentTime)||0;
+ if(!finished&&(Date.now()-progressSavedAt)<2500)return;
+ progressSavedAt=Date.now();
+ savedPositions[number]={time:finished?0:time,url:entry.url,updatedAt:Date.now()};
+ try{localStorage.setItem(progressKey,JSON.stringify(savedPositions))}catch{}
+}
+player.addEventListener('timeupdate',()=>saveNativeProgress(false));
+player.addEventListener('pause',()=>saveNativeProgress(true===player.ended));
+player.addEventListener('loadedmetadata',()=>{
+ const entry=videos.get(number),saved=savedPositions[number];
+ if(entry&&saved&&saved.url===entry.url&&saved.time>5&&player.duration&&saved.time<player.duration-5){
+  try{player.currentTime=saved.time}catch{}
+ }
+});
 const adminMode=new URLSearchParams(location.search).get('admin')==='1';
 async function request(path,options={}){
  const res=await fetch(path,{cache:'no-store',credentials:'same-origin',...options});
@@ -23,6 +47,7 @@ function clearVideo(){
  try{player.pause()}catch{}
  if(hls){try{hls.destroy()}catch{}hls=null}
  player.removeAttribute('src');player.load();
+ if(telegramPanel){telegramPanel.hidden=true;telegramFrame.src='about:blank';}
 }
 function showPlaceholder(head,body,link){
  clearVideo();player.hidden=true;placeholder.hidden=false;
@@ -36,7 +61,7 @@ function draw(){
  list.replaceChildren();
  const max=currentMax();
  el('trainingCount').textContent='ক্লাস ১–'+bn(max);
- el('connectedCount').textContent=bn([...videos.values()].filter(v=>v.type!=='external').length)+'টি প্লেয়ার লিংক';
+ el('connectedCount').textContent=bn(videos.size)+'টি ক্লাস লিংক';
  for(let i=1;i<=max;i++){
   const entry=videos.get(i),name=entry?.title||'হিজামা ক্লাস '+bn(i);
   if(q&&!(String(i)+' '+bn(i)+' '+name).toLowerCase().includes(q))continue;
@@ -48,7 +73,7 @@ function draw(){
   const caption=document.createElement('span');caption.className='training-lesson-copy';
   const strong=document.createElement('strong');strong.textContent=name;
   const small=document.createElement('small');
-  small.textContent=entry?(entry.type==='external'?'বাইরের লিংক':'ভিডিও সংযুক্ত'):'লিংক সংযুক্ত হয়নি';
+  small.textContent=entry?(entry.type==='external'?'Telegram পোস্ট':'ভিডিও ফাইল সংযুক্ত'):'লিংক সংযুক্ত হয়নি';
   caption.append(strong,small);btn.append(index,caption);
   btn.addEventListener('click',()=>play(i,true));frag.append(btn);
  }
@@ -79,10 +104,24 @@ async function play(i,auto=false){
  el('nowTitle').textContent=entry?.title||'হিজামা ক্লাস '+bn(i);
  el('nowMeta').textContent='ক্লাস '+bn(i)+' / '+bn(currentMax());
  draw();clearVideo();
+ downloadButton.disabled=!entry||entry.type!=='mp4';
+ downloadButton.title=downloadButton.disabled?'Telegram পোস্টের ফাইল এই ওয়েবসাইট থেকে অফলাইনে ডাউনলোড করা যায় না।':'এই MP4 ভিডিওটি ডিভাইসে ডাউনলোড করুন';
  if(!entry){showPlaceholder('ক্লাস '+bn(i)+'-এর ভিডিও এখনো সংযুক্ত হয়নি',
   'Telegram-এর আলাদা ভিডিও পোস্টের লিংক বা সরাসরি MP4/HLS স্ট্রিম প্রয়োজন। চ্যানেল লিংক দিয়ে প্লেয়ার অটো-সিঙ্ক হয় না।',sourceFolder);return}
- if(entry.type==='external'){showPlaceholder('এই ভিডিওটি অন্য সাইটে রয়েছে',
-  'বাইরের ওয়েবসাইটের ভিডিও শেষ হওয়ার ঘটনা এখানে পাওয়া যায় না, তাই autoplay সম্ভব নয়।',entry.url);return}
+ if(entry.type==='external'){
+  // The official Telegram embed is confined to the exact public channel supplied by the owner.
+  const match=entry.url.match(/^https:\/\/t\.me\/hijamatranigvideos\/([1-9][0-9]*)$/);
+  if(match){
+   placeholder.hidden=true;player.hidden=true;telegramPanel.hidden=false;
+   telegramLink.href=entry.url;
+   telegramFrame.title='ক্লাস '+bn(n)+' Telegram পোস্ট';
+   telegramFrame.src=entry.url+'?embed=1';
+   notice.textContent='Telegram পোস্টের ভিডিও এখানে চালানো সম্ভব হলে প্লে করুন। না চললে নিচের “ভিডিওটি Telegram-এ খুলুন” ব্যবহার করুন। Telegram embed-এর ভিডিও শেষ হলে স্বয়ংক্রিয়ভাবে পরের ক্লাস চালানো সম্ভব নয়।';
+   return;
+  }
+  showPlaceholder('এই ভিডিওটি অন্য সাইটে রয়েছে',
+   'বাইরের ওয়েবসাইটের ভিডিওর শেষ হওয়ার তথ্য পাওয়া যায় না, তাই স্বয়ংক্রিয়ভাবে পরের ক্লাস চলে না।',entry.url);return;
+ }
  placeholder.hidden=true;player.hidden=false;
  try{
   if(entry.type==='hls')await setupHls(entry.url);else player.src=entry.url;
@@ -94,9 +133,29 @@ function nextPlayable(){
  return [...videos.values()].filter(v=>v.number>number&&(v.type==='mp4'||v.type==='hls'))
   .sort((a,b)=>a.number-b.number)[0]?.number||null;
 }
-player.addEventListener('ended',()=>{const next=nextPlayable();if(next)play(next,true);else notice.textContent='সংযুক্ত সব ক্লাস শেষ।'});
+player.addEventListener('ended',()=>{saveNativeProgress(true);const next=nextPlayable();if(next)play(next,true);else notice.textContent='সংযুক্ত সব ক্লাস শেষ।'});
 player.addEventListener('error',()=>{if(!player.hidden)showPlaceholder('ভিডিও পাওয়া যায়নি','সরাসরি ভিডিও লিংক বর্তমানে কাজ করছে না।',videos.get(number)?.url)});
 el('videoSearch').addEventListener('input',draw);
+downloadButton.addEventListener('click',async()=>{
+ const entry=videos.get(number);
+ if(!entry||entry.type!=='mp4'||!/^https:\/\//.test(entry.url))return;
+ downloadButton.disabled=true;downloadButton.textContent='ডাউনলোড হচ্ছে…';
+ try{
+  const response=await fetch(entry.url,{mode:'cors'});
+  if(!response.ok)throw Error('ভিডিও ফাইল পাওয়া যায়নি (HTTP '+response.status+')');
+  const bytes=Number(response.headers.get('content-length'))||0;
+  if(bytes>600*1024*1024)throw Error('ভিডিওটি ৬০০ MB-এর বেশি; সরাসরি সোর্স থেকে ডাউনলোড করুন।');
+  const blob=await response.blob();
+  const href=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=href;a.download='Hijama-Class-'+number+(entry.url.toLowerCase().includes('.webm')?'.webm':'.mp4');
+  document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(href),30000);
+  notice.textContent='ক্লাস '+bn(number)+'-এর ভিডিও ফাইল ডাউনলোডের জন্য প্রস্তুত।';
+ }catch(e){
+  notice.textContent='অফলাইন ফাইল ডাউনলোড করা যায়নি: '+e.message;
+ }
+ finally{downloadButton.disabled=false;downloadButton.textContent='অফলাইন ডাউনলোড';}
+});
 el('previousClass').addEventListener('click',()=>play(Math.max(1,number-1),true));
 el('nextClass').addEventListener('click',()=>play(Math.min(currentMax(),number+1),true));
 async function refresh(){
@@ -146,7 +205,7 @@ el('loginForm').addEventListener('submit',async ev=>{
  ev.preventDefault();const btn=el('loginButton');btn.disabled=true;
  try{
   await request('/api/hijama-training-auth',{method:'POST',
-   headers:{'Content-Type':'application/json'},body:JSON.stringify({password:el('passcode').value})});
+   headers:{'Content-Type':'application/json'},body:JSON.stringify({password:el('passcode').value,remember:el('rememberDevice').checked})});
   el('passcode').value='';el('loginMessage').textContent='';setAuth(true);
  }catch(e){el('loginMessage').textContent=e.message}
  finally{btn.disabled=false}
