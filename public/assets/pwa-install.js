@@ -5,12 +5,16 @@ try{if(window.top!==window.self)return}catch{return}
 const landing=document.body?.dataset?.pwaInstallLanding==='true'||location.pathname.endsWith('/install.html');
 const shareUrl=new URL('install.html',new URL('./',location.href)).href;
 const appUrl=new URL('index.html',new URL('./',location.href)).href;
-const INSTALLED='ruqyah-pwa-installed-v1';
+// Do not trust historical localStorage flags: they survive an app uninstall and
+// incorrectly show "Open App" on devices where the PWA is no longer installed.
+// Browsers cannot universally detect an installed PWA from a regular tab.
+// Only standalone mode or a successful install event in this document is proof.
 const match=window.matchMedia?.('(display-mode: standalone)');
-const installed=()=>!!(match?.matches||navigator.standalone===true||window.matchMedia?.('(display-mode: fullscreen)').matches);
-const storedInstalled=()=>{try{return localStorage.getItem(INSTALLED)==='1'}catch{return false}};
-const setInstalled=()=>{try{localStorage.setItem(INSTALLED,'1')}catch{}};
-const isKnownInstalled=()=>installed()||storedInstalled();
+let installedDuringThisVisit=false;
+const installed=()=>!!(match?.matches||navigator.standalone===true);
+const setInstalled=()=>{installedDuringThisVisit=true;};
+const isKnownInstalled=()=>installed()||installedDuringThisVisit;
+try{localStorage.removeItem('ruqyah-pwa-installed-v1')}catch{}
 const ua=navigator.userAgent||'';
 const ios=/iPad|iPhone|iPod/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1);
 const safari=/Safari/i.test(ua)&&!/Chrome|CriOS|Edg|EdgiOS|OPR|FxiOS|Firefox|SamsungBrowser/i.test(ua);
@@ -157,12 +161,10 @@ function showInstall(){
    status.textContent='ব্রাউজারের ইনস্টল বাটন পাওয়া যায়নি। নিচের ধাপগুলো অনুসরণ করুন।';
   }
  });
- const manualDone=make('button','pwa-install-manual-done','ইনস্টল করেছি');
- manualDone.type='button';manualDone.hidden=true;
- manualDone.addEventListener('click',()=>{setInstalled();syncHeader();showOpenApp();});
- const showManual=()=>{manualDone.hidden=steps.hidden};
- action.addEventListener('click',()=>{if(!deferredPrompt)showManual()});
- actions.append(later,manualDone,action);
+ // Safari does not provide a reliable appinstalled confirmation when users
+ // manually add to the Home Screen. Show instructions rather than falsely
+ // declaring installation complete based only on a button tap.
+ actions.append(later,action);
  dialog.append(header,steps,status,actions);
  document.body.append(backdrop,dialog);
  close.focus({preventScroll:true});
