@@ -41,7 +41,7 @@
 .ruqyah-book-card-top,.ruqyah-book-card-bottom{display:flex;justify-content:space-between;gap:12px;align-items:center}
 .ruqyah-book-icon{display:grid;place-items:center;flex:none;width:58px;height:58px;border:1px solid #ceddcd;
  background:#ffffff6c;color:#396c50;border-radius:16px}
-.ruqyah-book-icon>.hgi{font-size:30px}
+.ruqyah-book-icon>.rq-cover-svg{width:32px;height:32px;display:block;flex:none;color:inherit;overflow:visible}
 .ruqyah-book-ivory .ruqyah-book-icon{border-color:#e0d2b9;color:#887145}
 .ruqyah-book-featured .ruqyah-book-icon{background:#f9fcf7;color:#1d6545}
 .ruqyah-book-tag{border:1px solid #d1ddcf;color:#728774;background:#ffffff54;
@@ -82,7 +82,7 @@ html[data-theme=dark] .ruqyah-guide-heading h1{color:var(--ink)}
  .ruqyah-book-grid{grid-template-columns:1fr;gap:13px}
  .ruqyah-book-card{min-height:218px;padding:19px 19px 16px;border-radius:17px}
  .ruqyah-book-icon{width:50px;height:50px;border-radius:13px}
- .ruqyah-book-icon>.hgi{font-size:27px}
+ .ruqyah-book-icon>.rq-cover-svg{width:28px;height:28px}
  .ruqyah-book-card-copy{padding:17px 0 17px}
  .ruqyah-book-card-copy h2{font-size:22px;margin:5px 0}
  .ruqyah-global-input input{font-size:12px}
