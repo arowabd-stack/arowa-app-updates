@@ -25,3 +25,11 @@ html{scrollbar-gutter:stable}.home-hero{min-height:340px;padding:38px 0 35px}.ho
 @media(max-width:380px){.site-brand>span:last-child{display:none}.site-brand .brand-icon{width:40px;height:44px}}
 .page-intro .questions-count{font-size:12px;margin:7px 0 0;line-height:1.6}
 @media(max-width:720px){.page-intro:has(.questions-search){padding:23px 0 10px}.page-intro:has(.questions-search) h1{font-size:32px;margin-bottom:14px}.page-intro:has(.questions-search) p:not(.questions-count){margin-bottom:15px}.common-links{flex-wrap:nowrap;overflow-x:auto;gap:6px;margin:12px 0;padding-bottom:6px;scrollbar-width:thin}.common-links a{white-space:nowrap;min-height:40px;display:flex;align-items:center}.questions-layout{margin-top:10px}}
+
+/* Hijama: real Hugeicons Stroke Rounded jar + blood glyphs form a cupping mark. */
+.cupping-mark{display:inline-grid;place-items:center;position:relative;vertical-align:middle;width:1.25em;height:1.25em;flex:none;line-height:1}
+.cupping-mark .hgi-jar{font-size:1em!important;transform:rotate(180deg)}
+.cupping-mark .hgi-blood{font-size:.46em!important;position:absolute;right:-.17em;bottom:-.01em;color:#bf7353}
+.large-icon .cupping-mark{font-size:35px}
+.brand-icon .cupping-mark{font-size:26px}
+.site-header nav .cupping-mark{font-size:18px}
