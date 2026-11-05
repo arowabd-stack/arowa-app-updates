@@ -35,11 +35,19 @@
 <section class="training-workspace" id="trainingWorkspace" hidden aria-label="ভিডিও প্লেলিস্ট">
 <div class="training-layout">
 <section class="training-playback">
+<div class="training-local-tools">
+  <div><strong>ডিভাইসের ভিডিও দিয়ে অফলাইন প্লেলিস্ট</strong><small>ডাউনলোড করা ভিডিওর নাম 01-, 02- … 137- দিয়ে শুরু হলে ক্লাস অনুযায়ী মিলবে। ফাইল ওয়েবসাইটে আপলোড হবে না।</small></div>
+  <label class="training-local-picker"><input type="file" id="trainingLocalFolder" accept=".mp4,.m4v,.mov,.webm,.mkv" webkitdirectory directory multiple><span>ভিডিও ফোল্ডার বাছুন</span></label>
+  <button type="button" id="trainingLocalClassButton" class="training-local-single">এই ক্লাসের ফাইল বাছুন</button>
+  <input type="file" id="trainingLocalClassFile" accept=".mp4,.m4v,.mov,.webm,.mkv,video/*" hidden>
+  <button type="button" id="trainingClearLocal" class="training-local-reset" hidden>লোকাল তালিকা খালি করুন</button>
+</div>
+<p class="training-local-status" id="trainingLocalStatus" role="status">অফলাইন ভিডিও দেখতে নিজের ডাউনলোড করা ফোল্ডার নির্বাচন করুন। ব্রাউজার বন্ধ করলে নিরাপত্তার কারণে আবার ফোল্ডার বাছতে হবে।</p>
 <div class="training-player-frame">
 <video id="trainingPlayer" playsinline controls preload="metadata" hidden></video>
 <div class="training-telegram-panel" id="trainingTelegramPanel" hidden>
  <iframe id="trainingTelegramFrame" title="Telegram ক্লাস ভিডিও পোস্ট" src="about:blank" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; encrypted-media"></iframe>
- <div class="training-telegram-footer"><a id="trainingTelegramLink" href="#" target="_blank" rel="noopener noreferrer">ভিডিওটি Telegram-এ খুলুন</a><small>কিছু Telegram ভিডিও ওয়েবসাইটে প্লে না-ও হতে পারে।</small></div>
+ <div class="training-telegram-footer"><a id="trainingTelegramWebLink" href="#" target="_blank" rel="noopener noreferrer">Telegram Web-এ ভিডিও চালান</a><a id="trainingTelegramLink" href="#" target="_blank" rel="noopener noreferrer">পোস্ট লিংক</a><small>Telegram-এর বড় ভিডিও iframe-এ না চললে Telegram Web ব্যবহার করুন।</small></div>
 </div>
 <div id="trainingPlaceholder" class="training-player-placeholder">
 <span class="training-big-play"><i class="hgi hgi-play" aria-hidden="true"></i></span>
