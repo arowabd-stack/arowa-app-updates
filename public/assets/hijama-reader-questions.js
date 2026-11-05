@@ -327,7 +327,7 @@ function render(){
   card.append(summary,content);list.append(card);
   controllers.set(record.id,replies);
   card.addEventListener('toggle',()=>{if(card.open)replies.load()});
-  if(openBefore.has(card.id)||focusCard===card.id){card.open=true;replies.load();}
+  if(openBefore.has(card.id)||focusCard===card.id||location.hash==='#'+card.id){card.open=true;replies.load();}
  });
  document.dispatchEvent(new Event('hijama:reader-questions-updated'));
  if(focusCard){
@@ -392,6 +392,74 @@ if(moderatorMode){
  });
  inner.append(label,apply,msg);staffPanel.append(sum,inner);
  root.insertBefore(staffPanel,list);
+}
+// In-app notifications are delivered only to the question author's browser key.
+// Persisted on the server while the site is closed; shown on the next visit.
+const notificationSeenKey='hijama-reader-notification-seen-v1';
+let notifications=[],seenNotifications=new Set();
+try{
+ const stored=JSON.parse(localStorage.getItem(notificationSeenKey)||'[]');
+ if(Array.isArray(stored))seenNotifications=new Set(stored.filter(x=>typeof x==='string').slice(-250));
+}catch{}
+function persistNotificationSeen(){
+ try{localStorage.setItem(notificationSeenKey,JSON.stringify([...seenNotifications].slice(-250)))}catch{}
+}
+function renderNotifications(){
+ notificationList.replaceChildren();
+ const unread=notifications.filter(n=>!seenNotifications.has(n.id)).length;
+ notificationBadge.hidden=unread===0;
+ notificationBadge.textContent=bn(Math.min(unread,99))+(unread>99?'+':'');
+ notificationButton.setAttribute('aria-label','নোটিফিকেশন'+(unread?' — '+bn(unread)+'টি নতুন':''));
+ if(!notifications.length){
+  notificationList.append(el('p','community-empty','আপনার প্রশ্নে নতুন কোনো রিপ্লাই নেই।'));
+  return;
+ }
+ for(const notice of notifications){
+  const row=el('a','reader-notification-row'+(seenNotifications.has(notice.id)?'':' is-unread'));
+  row.href='#reader-'+notice.questionId;
+  const meta=el('span','reader-notification-meta');
+  meta.append(el('strong','',notice.official?'হিজামা ওয়েবসাইট':notice.from),
+   el('span','',formatDate(notice.createdAt)));
+  row.append(meta,el('span','reader-notification-title','আপনার প্রশ্নে রিপ্লাই দিয়েছেন'),
+   el('span','reader-notification-excerpt',notice.question||'আপনার প্রশ্ন'),
+   el('span','reader-notification-preview',notice.preview||''));
+  row.addEventListener('click',()=>{
+   seenNotifications.add(notice.id);persistNotificationSeen();renderNotifications();
+   notificationPanel.hidden=true;notificationButton.setAttribute('aria-expanded','false');
+   const target=document.getElementById('reader-'+notice.questionId);
+   if(target){target.open=true;target.scrollIntoView({block:'center',behavior:'smooth'});}
+  });
+  notificationList.append(row);
+ }
+}
+function markNotificationsSeen(){
+ for(const item of notifications)seenNotifications.add(item.id);
+ persistNotificationSeen();renderNotifications();
+}
+notificationButton.addEventListener('click',()=>{
+ notificationPanel.hidden=!notificationPanel.hidden;
+ notificationButton.setAttribute('aria-expanded',String(!notificationPanel.hidden));
+ if(!notificationPanel.hidden)markNotificationsSeen();
+});
+async function refreshNotifications(){
+ if(!identity?.key)return;
+ try{
+  const data=await request(apiNotifications);
+  notifications=Array.isArray(data.notifications)?data.notifications:[];
+  renderNotifications();
+ }catch(err){
+  if(!notificationPanel.hidden){
+   notificationList.replaceChildren(el('p','community-empty',err.message||'নোটিফিকেশন লোড করা যায়নি।'));
+  }
+ }
+}
+if(identity?.key){
+ refreshNotifications();
+ // Poll only while this site is visible. Replies received while closed are loaded on return.
+ window.setInterval(()=>{if(!document.hidden)refreshNotifications()},45000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshNotifications()});
+}else{
+ notificationArea.hidden=true;
 }
 load();
 })();
