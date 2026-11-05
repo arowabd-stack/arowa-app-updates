@@ -1,4 +1,5 @@
 import {list,put} from '@vercel/blob';
+import {telegramLessons} from '../lib/hijama-training-telegram-catalog.js';
 import {createHmac,timingSafeEqual} from 'node:crypto';
 const folder='hijama/training/catalog/';
 const sourceShare='https://t.me/hijamatranigvideos';
@@ -40,15 +41,25 @@ async function readAll(){
 }
 export default async function handler(req,res){
  if(!isAuthenticated(req))return json(res,401,{error:'প্রশিক্ষণ ভিডিও দেখতে প্রথমে পাসওয়ার্ড দিন।'});
- if(!process.env.BLOB_READ_WRITE_TOKEN)return json(res,503,{error:'ভিডিও তালিকার ক্লাউড সংযোগ নেই।'});
  if(req.method==='GET'){
   try{
-   const videos=await readAll();
+   // Published owner-supplied Telegram post links work as the baseline catalog.
+   // Authenticated cloud items override a class, e.g. when a direct MP4/HLS is available.
+   const merged=new Map(telegramLessons.map(item=>[item.number,item]));
+   if(process.env.BLOB_READ_WRITE_TOKEN){
+    try{
+     for(const item of await readAll())merged.set(item.number,item);
+    }catch(storageError){
+     console.warn('Using published Telegram catalog due to cloud lookup failure',storageError?.message);
+    }
+   }
+   const videos=[...merged.values()].sort((a,b)=>a.number-b.number);
    return json(res,200,{videos,minimumClasses:137,sourceShare,autoSync:false,
-     notice:'Telegram চ্যানেলের আলাদা ভিডিও পোস্টের লিংক বা MP4/HLS স্ট্রিম এখনো তালিকায় সংযুক্ত নেই। চ্যানেলটি আলাদা করে খুলতে পারবেন; যাচাইকৃত ক্লাস-লিংক যুক্ত হলে এখানে দেখা যাবে।'});
+     notice:'১–১৩৭টি Telegram পোস্ট যুক্ত আছে। ক্লাস খুললে পোস্টের ভিডিও এখানে দেখার চেষ্টা করবে; Telegram-এর সীমাবদ্ধতায় কোনো ভিডিও না চললে সরাসরি পোস্ট লিংক ব্যবহার করুন। Telegram embed-এ স্বয়ংক্রিয়ভাবে পরের ভিডিও চালানো সম্ভব নয়।'});
   }catch(e){console.error('Hijama videos list failed',e?.message);return json(res,502,{error:'ভিডিও তালিকা লোড করা যায়নি।'});}
  }
  if(req.method!=='POST')return json(res,405,{error:'Method not allowed'});
+ if(!process.env.BLOB_READ_WRITE_TOKEN)return json(res,503,{error:'ভিডিও তালিকায় পরিবর্তন করার ক্লাউড সংযোগ নেই।'});
  if(!editor(req))return json(res,403,{error:'ভিডিও তালিকায় পরিবর্তন করতে আলাদা প্রশাসক কোড প্রয়োজন।'});
  if(req.headers.origin){
   try{if(new URL(req.headers.origin).host!==req.headers.host)return json(res,403,{error:'Invalid origin'})}catch{return json(res,403,{error:'Invalid origin'})}
