@@ -58,7 +58,7 @@ body{display:flex;flex-direction:column}
 <body>
 <nav id="hijama-reader-nav" aria-label="ওয়েবসাইট নেভিগেশন"><a href="./index.html"><i class="hgi hgi-home-01" aria-hidden="true"></i> হোমপেজ</a><a href="./hijama-guide.html">হিজামা বিভাগ</a><a href="./hijama-questions.html">প্রশ্নোত্তর</a><span class="nav-title">হিজামা গাইড · PDF রিডার</span></nav>
 <div id="app">
-  <div id="status" role="status" aria-live="polite"><div class="inner"><strong id="statusTitle">PDF রিডার প্রস্তুত হচ্ছে…</strong><span id="statusText">মূল বইটি একবার লোড হলে পৃষ্ঠা পরিবর্তন হবে তাৎক্ষণিক।</span><div class="progress"><div id="progressBar"></div></div><button id="retry" type="button" hidden>আবার চেষ্টা করুন</button><label class="file-label" for="localPdf">নিজের PDF বেছে পড়ুন</label><input id="localPdf" type="file" accept=".pdf,application/pdf"><small>ফাইলটি শুধুই এই ডিভাইসে পড়া হবে; সার্ভারে আপলোড হবে না।</small></div></div>
+  <div id="status" role="status" aria-live="polite"><div class="inner"><strong id="statusTitle">PDF রিডার প্রস্তুত হচ্ছে…</strong><span id="statusText">মূল বইটি একবার লোড হলে পৃষ্ঠা পরিবর্তন হবে তাৎক্ষণিক।</span><div class="progress"><div id="progressBar"></div></div><button id="retry" type="button" hidden>আবার চেষ্টা করুন</button><label class="file-label" for="localPdf">নিজের PDF বেছে পড়ুন</label><input id="localPdf" type="file" accept=".pdf,application/pdf"><small>নিজের PDF শুধু এই ডিভাইসে খুলবে। মূল বইটি সবার জন্য প্রকাশ করতে <a href="hijama-pdf-publish.html">এখানে PDF আপলোড করুন</a> (প্রশাসক কোড প্রয়োজন)।</small></div></div>
   <div id="reader" role="region" aria-label="মূল PDF, টাচ ও মাউস দিয়ে স্ক্রল করুন" tabindex="0"><div id="pages"></div></div>
   <div id="hud" aria-label="বইয়ের পৃষ্ঠা ও Zoom"><button id="prevPage" aria-label="আগের পৃষ্ঠা" title="আগের পৃষ্ঠা">‹</button><input type="number" min="1" max="126" id="pageJump" placeholder="পৃষ্ঠা" aria-label="পৃষ্ঠা নম্বর" inputmode="numeric"><button id="nextPage" aria-label="পরের পৃষ্ঠা" title="পরের পৃষ্ঠা">›</button><span class="reader-version" title="নতুন পৃষ্ঠা-ক্যাশ রিডার">হিজামা</span><span id="offlineBadge" class="offline-state" hidden aria-live="polite"></span><span id="preparedBadge" class="pages-prepared" hidden aria-live="polite"></span><span class="badge" id="pageBadge">১ / ১২৬</span><button id="zoomOut" title="ছোট করুন" aria-label="Zoom out">−</button><span class="pct" id="zoomLevel">100%</span><button id="zoomIn" title="বড় করুন" aria-label="Zoom in">+</button></div>
 </div>
@@ -81,7 +81,16 @@ const PDF_CACHE='hijama-guide-pdf-v1';
 const LIB_CACHE='ruqyah-pdfjs-lib-v33';
 const PAGES_CACHE='hijama-rendered-book-pages-v1';
 const PREP_WIDTH=1120;
-const pdfUrl=new URL('./assets/hijama-guide.pdf',document.baseURI).href;
+let pdfUrl=new URL('./assets/hijama-guide.pdf',document.baseURI).href;
+let resolvedCloudPdf=false;
+async function resolveCloudPDF(){
+ if(resolvedCloudPdf)return;
+ const response=await fetch('/api/hijama-pdf-source',{cache:'no-store'});
+ if(!response.ok)throw new Error('হিজামা বইয়ের ক্লাউড তথ্য লোড করা যায়নি।');
+ const data=await response.json();
+ if(!data.available||!data.url)throw new Error('মূল ১২৬ পৃষ্ঠার PDF এখনো ওয়েবসাইটে প্রকাশিত হয়নি।');
+ pdfUrl=data.url;resolvedCloudPdf=true;
+}
 let localFileBytes=null;
 const allowedOrigin=location.origin==='null'?'*':location.origin;
 let TOTAL=126;
@@ -163,6 +172,7 @@ async function getPdfJS(){
 }
 async function getPdfBytes(){
  if(localFileBytes) return localFileBytes.slice(0);
+ await resolveCloudPDF();
 
  let cache=null;
  try{if('caches'in window)cache=await caches.open(PDF_CACHE)}catch(e){console.warn('PDF offline cache unavailable',e)}
@@ -411,7 +421,7 @@ async function loadPDF(){
  })().catch(e=>{
    console.error('Hijama PDF reader:',e);
    pdf=null;
-   const details=/404/.test(String(e))?'মূল PDF এখনো ওয়েবসাইটে আপলোড হয়নি। নিচের বাটন দিয়ে নিজের PDF বেছে পড়ুন।':'প্রথমবার PDF.js চালাতে ইন্টারনেট প্রয়োজন। সংযোগ বা Vercel ফাইল যাচাই করুন।';
+   const details=/PDF|পৃষ্ঠার|ক্লাউড|404|Invalid/i.test(String(e))?'মূল বইটি প্রকাশ না হওয়া পর্যন্ত প্রশাসককে একবার PDF আপলোড করতে হবে। আপলোড করার পর সব পাঠক সরাসরি বই খুলতে পারবেন।':'প্রথমবার PDF.js চালাতে ইন্টারনেট প্রয়োজন। ইন্টারনেট সংযোগ পরীক্ষা করুন।';
    setStatus('PDF রিডার চালু হয়নি',details+' '+String(e?.message||e),true);
    notify('error',{message:String(e?.message||e)});
    throw e;
@@ -481,5 +491,6 @@ setStatus('মূল হিজামা বই খোলা হচ্ছে…',
 loadPDF().catch(()=>{});
 })();
 </script>
+<script src="./assets/pwa-install.js"></script>
 </body>
 </html>
