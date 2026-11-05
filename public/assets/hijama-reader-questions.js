@@ -132,14 +132,11 @@ formCancel.addEventListener('click',closeQuestionEditor);
 function renderReplies(record){
  const area=el('section','reader-replies');
  const head=el('div','community-heading reader-reply-heading');
- const title=el('strong','community-title','পাঠকদের উত্তর');
- const count=el('span','community-count');
- const left=el('div','community-heading-left');left.append(title,count);
  const toggle=el('button','community-toggle','Reply to '+record.name);
  toggle.type='button';toggle.setAttribute('aria-expanded','false');
  const composerId='replyComposer-'+record.id;
  toggle.setAttribute('aria-controls',composerId);
- head.append(left,toggle);
+ head.append(toggle);
  const posts=el('div','community-posts reader-reply-posts');
  const message=el('p','community-status');message.setAttribute('role','status');
  const composer=el('div','community-composer');composer.hidden=true;composer.id=composerId;
@@ -201,8 +198,7 @@ function renderReplies(record){
  }
  function draw(){
   posts.replaceChildren();
-  count.textContent=replies.length?'· '+bn(replies.length)+'টি':'';
-  if(!replies.length)posts.append(el('p','community-empty','এখনো কোনো উত্তর নেই।'));
+  area.classList.toggle('has-replies',replies.length>0);
   const groups=new Map();
   for(const r of replies){
    const key=r.official?'official':r.ownerId||'legacy-'+r.id;
@@ -246,7 +242,7 @@ function renderReplies(record){
  }
  async function loadReplies(force=false){
   if(loadedReplies&&!force)return;
-  message.textContent='উত্তর লোড হচ্ছে…';
+  message.textContent='';
   try{
    const data=await request(apiReplies+'?question='+encodeURIComponent(record.id),'GET',null,!!staff.code);
    replies=Array.isArray(data.replies)?data.replies:[];
