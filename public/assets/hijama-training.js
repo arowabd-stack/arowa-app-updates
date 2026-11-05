@@ -5,7 +5,7 @@ const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
 const lock=el('lockScreen'),work=el('trainingWorkspace'),player=el('trainingPlayer'),
  placeholder=el('trainingPlaceholder'),list=el('videoList'),notice=el('trainingNotice');
 const source=el('sourceLink'),admin=el('trainingAdmin');
-let videos=new Map(),number=0,hls=null,sourceFolder='',authenticated=false;
+let videos=new Map(),number=0,hls=null,sourceFolder='',authenticated=false,minimumClasses=137;
 let last=0;try{last=Number(localStorage.getItem('hijama-training-last')||0)}catch{}
 const adminMode=new URLSearchParams(location.search).get('admin')==='1';
 async function request(path,options={}){
@@ -14,7 +14,7 @@ async function request(path,options={}){
  if(!res.ok)throw Error(body.error||'সার্ভারে সমস্যা হয়েছে।');
  return body;
 }
-const currentMax=()=>Math.max(136,...videos.keys());
+const currentMax=()=>Math.max(minimumClasses,...videos.keys());
 function setLinks(url){
  sourceFolder=url||'';
  document.querySelectorAll('[data-training-source]').forEach(a=>{a.href=sourceFolder||'#';a.hidden=!sourceFolder});
@@ -102,6 +102,7 @@ el('nextClass').addEventListener('click',()=>play(Math.min(currentMax(),number+1
 async function refresh(){
  const data=await request('/api/hijama-training-videos');
  videos=new Map((data.videos||[]).map(x=>[x.number,x]));
+ minimumClasses=Math.max(137,Number(data.minimumClasses)||137);
  setLinks(data.sourceShare);
  draw();
  const selected=number||((last>0&&last<=currentMax())?last:1);
