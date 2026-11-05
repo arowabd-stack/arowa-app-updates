@@ -48,7 +48,7 @@ function closeInstalled(){
  set(INSTALLED,'1');panel?.remove();panel=null;opened=false;event=null;
 }
 function show(force=false){
- if(opened||installed()||(!force&&(Number(get(KEY)||0)>Date.now()||sessionGet())))return;
+ if(opened||installed()||(!force&&(get(INSTALLED)==='1'||Number(get(KEY)||0)>Date.now()||sessionGet())))return;
  if(!document.body||document.visibilityState==='hidden')return;
  opened=true;sessionSet();
  const section=document.createElement('aside');
