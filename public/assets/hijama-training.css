@@ -59,3 +59,24 @@
 .training-admin-form button{align-self:end;background:#165b42;color:#fff;border-color:#165b42}
 @media(max-width:820px){.training-layout{grid-template-columns:1fr}.training-sidebar{max-height:560px}.training-header{margin-top:12px}}
 @media(max-width:560px){.training-main{width:calc(100% - 24px)}.training-header h1{font-size:25px}.training-lock{padding:23px 15px}.training-pass-row{flex-direction:column}.training-pass-row button{min-height:44px}.training-admin-form{grid-template-columns:1fr}.training-next-row{width:100%}.training-next-row button{flex:1}.training-now{padding:13px}}
+
+/* Telegram post preview and lesson actions: contained within the original player layout. */
+.training-player-frame:has(.training-telegram-panel:not([hidden])){aspect-ratio:auto;height:clamp(430px,54vw,660px);min-height:0}
+.training-telegram-panel{display:flex;flex-direction:column;width:100%;height:100%;min-width:0;min-height:0;background:#f9fbf8}
+.training-telegram-panel[hidden]{display:none!important}
+.training-telegram-panel iframe{display:block;flex:1 1 auto;min-height:0;width:100%;border:0;background:white}
+.training-telegram-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;flex-wrap:wrap;background:#f5f8f5;border-top:1px solid #dce8dd;color:#5e7065}
+.training-telegram-footer a{font-weight:750;color:#185a40;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.training-telegram-footer small{font-size:11px;line-height:1.5;color:#617465}
+.training-remember{display:flex!important;align-items:center;gap:8px;text-align:left;cursor:pointer;font-size:12px!important;font-weight:600!important;color:var(--ink,#285242);margin:12px 0 0!important}
+.training-remember input{width:16px;height:16px;min-height:16px;flex:0 0 16px;accent-color:#1c6248;cursor:pointer}
+.training-next-row{flex-wrap:wrap}
+#offlineDownload{border-color:#a9c8b1;color:#216549}
+#offlineDownload:not(:disabled){background:#ecf7ed}
+#offlineDownload:disabled{cursor:not-allowed;opacity:.54}
+@media(max-width:660px){
+ .training-player-frame:has(.training-telegram-panel:not([hidden])){height:510px;max-height:calc(100dvh - 90px)}
+ .training-telegram-footer{padding:8px 10px;gap:3px}
+ .training-telegram-footer small{font-size:10px}
+ #offlineDownload{min-width:100%}
+}
