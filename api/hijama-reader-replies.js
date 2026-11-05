@@ -5,6 +5,7 @@ import {createHash,randomUUID,timingSafeEqual} from 'node:crypto';
 // Public readers can reply; only server-authorized staff can post "হিজামা ওয়েবসাইট" replies.
 const ROOT='hijama/reader-replies/';
 const QUESTIONS='hijama/reader-questions/';
+const NOTIFICATIONS='hijama/reader-notifications/';
 const MAX_SCAN=350,MAX_DISPLAY=120;
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const validId=id=>typeof id==='string'&&UUID.test(id);
@@ -54,7 +55,7 @@ async function activeQuestion(id){
  if(!refs.length)return false;
  const rows=await Promise.all(refs.map(read));
  const newest=rows.find(r=>r&&r.id===id);
- return !!(newest&&!newest.deleted);
+ return newest&&!newest.deleted?newest:null;
 }
 async function newestPost(q,id){
  const refs=await scan(ROOT+q+'/'+id+'/',35);
@@ -116,7 +117,8 @@ export default async function handler(req,res){
   return safe(res,400,{error:'উত্তর ৪–১৫০০ অক্ষরের হতে হবে; লিংক বা বিজ্ঞাপন নয়।'});
  try{
   if(req.method==='POST'){
-   if(!await activeQuestion(q))return safe(res,404,{error:'মূল প্রশ্নটি আর পাওয়া যাচ্ছে না।'});
+   const question=await activeQuestion(q);
+   if(!question)return safe(res,404,{error:'মূল প্রশ্নটি আর পাওয়া যাচ্ছে না।'});
    const name=official?'হিজামা ওয়েবসাইট':clean(data.name);
    if(!official&&(name.length<2||name.length>70||spam(name)||
        /^(হিজামা\s*ওয়েবসাইট|ওয়েবসাইট\s*কর্তৃপক্ষ|hijama\s*website|official\s*admin)$/i.test(name)))
@@ -131,6 +133,20 @@ export default async function handler(req,res){
     official,createdAt:now,updatedAt:now,
     ownerHash:official?null:hash,ownerId:official?'official':hash.slice(0,24)};
    await save(q,row.id,row);
+   // Notify the question author only when another person (or verified staff) replies.
+   // A reply stays saved if notification delivery has a transient failure.
+   if(question.ownerHash&&(official||question.ownerHash!==hash)){
+    try{
+     const notice={id:randomUUID(),questionId:q,replyId:row.id,
+      from:row.name,official:!!official,createdAt:now,
+      question:typeof question.question==='string'?question.question.slice(0,140):'',
+      preview:answer.slice(0,170)};
+     await put(NOTIFICATIONS+question.ownerHash+'/'+notice.id+'.json',
+      JSON.stringify(notice),options);
+    }catch(noticeError){
+     console.error('Reader reply notification failed',noticeError?.message);
+    }
+   }
    return safe(res,201,{ok:true,reply:publicPost(row,hash,staff)});
   }
   if(!validId(data.id))return safe(res,400,{error:'অবৈধ উত্তরের নম্বর।'});
