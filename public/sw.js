@@ -1,6 +1,6 @@
 /* Ruqyah Reader v27: one PDF asset, cache-on-demand, byte-range support offline. */
 'use strict';
-const APP_VERSION='v50-20261105-hijama-icon-sizing';
+const APP_VERSION='v51-20261105-hijama-137-telegram-icons';
 const SHELL_CACHE='ruqyah-pwa-shell-'+APP_VERSION;
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const PDF_URL=new URL('assets/ruqyah-book.pdf',self.registration.scope).href;
@@ -8,7 +8,7 @@ const HOME=new URL('index.html',self.registration.scope).href;
 const FALLBACK=new URL('offline.html',self.registration.scope).href;
 const SHELL_FILES=['index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png',
 'icons/icon-maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','offline.html','check.html',
-'book-reader.html','reader.html','hijama-guide.html','hijama-book.html','hijama-questions.html','hijama-training.html','hijama-pdf-publish.html','data/hijama-answers.json','assets/book21-direct-v38.js','assets/library.css','assets/library.js','assets/pwa-install.js','assets/pwa-install.css','assets/hijama-training.js','assets/hijama-training.css','assets/hijama-toc.js','assets/hijama-toc.css','assets/hugeicons.css','assets/ruqyah-redesign.css','assets/ruqyah-redesign.js','assets/reader-settings.js','assets/pdf-shell.css','assets/questions.js','assets/question-editor.js','assets/fonts/hind-siliguri.ttf','assets/fonts/hind-siliguri-semibold.ttf','assets/fonts/kalpurush.ttf','assets/fonts/noorehuda.ttf','assets/fonts/hugeicons.ttf'];
+'book-reader.html','reader.html','hijama-guide.html','hijama-book.html','hijama-questions.html','hijama-training.html','hijama-pdf-publish.html','data/hijama-answers.json','assets/book21-direct-v38.js','assets/library.css','assets/library.js','assets/pwa-install.js','assets/pwa-install.css','assets/hijama-training.js','assets/hijama-training.css','assets/hijama-cupping.png','assets/hijama-treatment.png','assets/hijama-toc.js','assets/hijama-toc.css','assets/hugeicons.css','assets/ruqyah-redesign.css','assets/ruqyah-redesign.js','assets/reader-settings.js','assets/pdf-shell.css','assets/questions.js','assets/question-editor.js','assets/fonts/hind-siliguri.ttf','assets/fonts/hind-siliguri-semibold.ttf','assets/fonts/kalpurush.ttf','assets/fonts/noorehuda.ttf','assets/fonts/hugeicons.ttf'];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(SHELL_CACHE);
