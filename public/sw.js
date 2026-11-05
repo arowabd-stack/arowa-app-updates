@@ -1,6 +1,6 @@
 /* Ruqyah Reader v27: one PDF asset, cache-on-demand, byte-range support offline. */
 'use strict';
-const APP_VERSION='v56-20261105-open-app-and-original-player';
+const APP_VERSION='v57-20261105-install-state-fix';
 const SHELL_CACHE='ruqyah-pwa-shell-'+APP_VERSION;
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const PDF_URL=new URL('assets/ruqyah-book.pdf',self.registration.scope).href;
