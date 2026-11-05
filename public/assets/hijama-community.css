@@ -94,3 +94,41 @@
  .community-own-item{align-items:flex-start;flex-direction:column;gap:6px}
  .community-own-actions{align-self:flex-end}
 }
+
+/* Reader questions are category 10: same FAQ details, with compact replies. */
+#cat10{scroll-margin-top:calc(var(--header,82px) + 15px)}
+.reader-questions{padding:0;margin:0;color:var(--ink,#203c33);font-size:13px}
+.reader-questions [hidden]{display:none!important}
+.reader-question-items{display:grid;gap:0}
+.reader-question{scroll-margin-top:calc(var(--header,82px) + 22px)}
+.reader-question summary{align-items:center;gap:12px}
+.reader-question-title{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.6}
+.reader-answer{font-size:13px;line-height:1.7}
+.reader-question-meta{display:flex;flex-wrap:wrap;align-items:center;gap:9px;font-size:12px;margin-bottom:9px}
+.reader-question-meta .community-date{display:inline;margin:0}
+.reader-question .reader-item-actions{margin:9px 0;display:flex;justify-content:flex-start}
+.reader-replies{border-top:1px solid var(--line,#dce5dc);padding-top:12px;margin-top:11px}
+.reader-reply-heading{margin:0 0 10px}
+.reader-reply-posts{margin-top:6px}
+.reader-reply-posts .community-person{padding:9px 12px}
+.reader-reply-posts .community-entry-body{font-size:13px}
+.reader-replies .community-composer{margin-top:12px}
+.community-official{border-color:#9cc5af;background:var(--sage,#eef6f0)}
+.community-official .community-person-name{font-weight:800}
+.community-official-label{font-size:10px;line-height:1.45;font-weight:750;color:#225e44;border:1px solid #a2c8b0;border-radius:6px;padding:2px 6px}
+.community-official-switch{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:650;color:var(--ink,#274237);cursor:pointer}
+.community-official-switch input{width:16px;height:16px;accent-color:#1c6048}
+.community-reader-heading{margin:0 0 8px;align-items:center}
+.community-reader-heading .community-reader-description{margin:0;font-size:12px}
+.reader-questions .community-status{font-size:11px}
+.reader-moderator{margin:10px 0 14px;border:1px solid var(--line,#dce5dc);border-radius:10px;padding:10px 12px}
+.reader-moderator summary{cursor:pointer;font-size:12px;font-weight:700}
+.reader-moderator .community-form{padding-top:10px}
+@media(max-width:650px){
+ .reader-answer{padding:12px 15px}
+ .reader-reply-posts .community-person{padding:8px 10px}
+ .reader-question summary{align-items:baseline}
+ .community-reader-heading{align-items:flex-start}
+ .community-reader-heading .community-toggle{margin-left:auto}
+ .reader-question-title{font-size:14px}
+}
