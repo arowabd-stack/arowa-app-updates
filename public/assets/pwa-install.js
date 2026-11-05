@@ -117,10 +117,9 @@ function showInstall(){
  actions.append(later,action);
  dialog.append(header,steps,status,actions);
  document.body.append(backdrop,dialog);
- const escape=e=>{if(e.key==='Escape'){closeDialog();document.removeEventListener('keydown',escape)}};
- document.addEventListener('keydown',escape,{once:false});
  close.focus({preventScroll:true});
 }
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&dialog)closeDialog()});
 window.addEventListener('beforeinstallprompt',event=>{
  event.preventDefault();deferredPrompt=event;
  const action=dialog?.querySelector('.pwa-install-primary');
