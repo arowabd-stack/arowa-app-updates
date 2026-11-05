@@ -28,7 +28,7 @@ function showPlaceholder(head,body,link){
  clearVideo();player.hidden=true;placeholder.hidden=false;
  el('placeholderTitle').textContent=head;el('placeholderDetail').textContent=body;
  source.href=link||'#';source.hidden=!link;
- source.textContent=link===sourceFolder?'TeraBox-এর মূল ফোল্ডার দেখুন':'মূল ভিডিওর লিংক খুলুন';
+ source.textContent=link===sourceFolder?'Telegram চ্যানেল খুলুন':'মূল ভিডিওর লিংক খুলুন';
 }
 function draw(){
  const q=el('videoSearch').value.trim().toLowerCase();
@@ -80,7 +80,7 @@ async function play(i,auto=false){
  el('nowMeta').textContent='ক্লাস '+bn(i)+' / '+bn(currentMax());
  draw();clearVideo();
  if(!entry){showPlaceholder('ক্লাস '+bn(i)+'-এর ভিডিও এখনো সংযুক্ত হয়নি',
-  'TeraBox ফোল্ডারের ভিডিও এই প্লেয়ারে আনতে সরাসরি MP4 অথবা HLS লিংক প্রয়োজন।',sourceFolder);return}
+  'Telegram-এর আলাদা ভিডিও পোস্টের লিংক বা সরাসরি MP4/HLS স্ট্রিম প্রয়োজন। চ্যানেল লিংক দিয়ে প্লেয়ার অটো-সিঙ্ক হয় না।',sourceFolder);return}
  if(entry.type==='external'){showPlaceholder('এই ভিডিওটি অন্য সাইটে রয়েছে',
   'বাইরের ওয়েবসাইটের ভিডিও শেষ হওয়ার ঘটনা এখানে পাওয়া যায় না, তাই autoplay সম্ভব নয়।',entry.url);return}
  placeholder.hidden=true;player.hidden=false;
