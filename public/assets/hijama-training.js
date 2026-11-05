@@ -157,11 +157,13 @@ async function setupHls(url){
 }
 async function play(i,auto=false){
  if(!authenticated||!Number.isInteger(i)||i<1||i>currentMax())return;
+ // Save old position against its original class before switching to the new class.
+ clearVideo();
  number=i;try{localStorage.setItem('hijama-training-last',String(i))}catch{}
  const entry=videos.get(i);
  el('nowTitle').textContent=entry?.title||'হিজামা ক্লাস '+bn(i);
  el('nowMeta').textContent='ক্লাস '+bn(i)+' / '+bn(currentMax());
- draw();clearVideo();
+ draw();
  const localFile=localFiles.get(i);
  downloadButton.disabled=!!localFile||!entry||entry.type!=='mp4';
  downloadButton.title=localFile?'ভিডিওটি আগেই আপনার ডিভাইসে আছে।':downloadButton.disabled?'Telegram পোস্টের ফাইল এই ওয়েবসাইট থেকে অফলাইনে ডাউনলোড করা যায় না।':'এই MP4 ভিডিওটি ডিভাইসে ডাউনলোড করুন';
@@ -270,7 +272,7 @@ function setAuth(ok){
  authenticated=ok;lock.hidden=ok;work.hidden=!ok;el('logout').hidden=!ok;
  admin.hidden=!ok||!adminMode;
  if(ok)refresh().catch(e=>notice.textContent=e.message);
- else{clearVideo();videos.clear();number=0;list.replaceChildren();}
+ else{clearVideo();videos.clear();localFiles.clear();duplicateSerials.clear();setLocalStatus('লোকাল ভিডিওর তালিকা খালি হয়েছে। আবার লগইন করে ফোল্ডার বেছে নিন।');number=0;list.replaceChildren();}
 }
 el('loginForm').addEventListener('submit',async ev=>{
  ev.preventDefault();const btn=el('loginButton');btn.disabled=true;
