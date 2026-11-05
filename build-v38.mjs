@@ -25,13 +25,17 @@ const css='<style id="ruqyah-v38-static-canvas">\n'
 +'</style>';
 if(!html.includes('</head>'))throw new Error('Missing HTML head');
 html=html.replace('</head>',css+'\n</head>');
+// Reader without a selected book opens the 21-cover library, not the sidebar.
+// Direct #chapter-N links continue to open the original individual readers.
+const bookChooserGate='<script>if(!location.hash||location.hash==="#")location.replace(new URL("./ruqyah-guide.html",location.href).href);</script>';
+html=html.replace('</head>',bookChooserGate+'\n</head>');
 if(html.includes('id="bookPdfFrame"')||html.includes('id="ruqyah-v36-custom-canvas-bridge"')||!html.includes('id="bookCanvasMount"'))throw new Error('Native PDF viewer survived build');
 
 // Shared accessible site navigation and visual system, without rewriting scripture.
 const header=readFileSync('public/assets/ruqyah-header.html','utf8');
 html=html.replace(/<body\b[^>]*>/i,tag=>tag+'\n'+header);
 html=html.replace('</head>','<script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem("library-theme"))||"light"}catch(e){}</script><link rel="stylesheet" href="./assets/hugeicons.css"><link rel="stylesheet" href="./assets/library.css"><link rel="stylesheet" href="./assets/ruqyah-redesign.css"></head>');
-html=html.replace('</body>','<div id="toast" class="toast" role="status" aria-live="polite"></div><script src="./assets/library.js"></script><script src="./assets/pwa-install.js"></script><script src="./assets/ruqyah-redesign.js"></script><script src="./assets/reader-settings.js"></script></body>');
+html=html.replace('</body>','<div id="toast" class="toast" role="status" aria-live="polite"></div><script src="./assets/library.js"></script><script src="./assets/pwa-install.js"></script><script src="./assets/ruqyah-redesign.js"></script><script src="./assets/ruqyah-library-search-bridge.js"></script><script src="./assets/reader-settings.js"></script></body>');
 // The shared shell uses a details drawer at every viewport width.
 html=html.replace("const wide=()=>window.matchMedia('(min-width: 1050px)').matches;","const wide=()=>false;");
 // Serve only the Arabic fonts a visitor selects instead of downloading every embedded font in HTML.
