@@ -54,13 +54,28 @@ body{display:flex;flex-direction:column}
 #status .inner{max-width:420px}
 @media(max-width:650px){#hijama-reader-nav{min-height:0;gap:5px;padding:7px 8px}#hijama-reader-nav a{font-size:12px;padding:5px 8px}#hijama-reader-nav .nav-title{display:none}#hud .offline-state,#hud .pages-prepared{display:none!important}#hud{bottom:8px;gap:3px;padding:5px}}
 </style>
-<script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem("library-theme"))||"light"}catch(e){}</script><link rel="stylesheet" href="assets/hugeicons.css"><link rel="stylesheet" href="assets/pdf-shell.css"></head>
+<script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem("library-theme"))||"light"}catch(e){}</script><link rel="stylesheet" href="assets/hugeicons.css"><link rel="stylesheet" href="assets/pdf-shell.css"><link rel="stylesheet" href="assets/hijama-toc.css"></head>
 <body>
-<nav id="hijama-reader-nav" aria-label="ওয়েবসাইট নেভিগেশন"><a href="./index.html"><i class="hgi hgi-home-01" aria-hidden="true"></i> হোমপেজ</a><a href="./hijama-guide.html">হিজামা বিভাগ</a><a href="./hijama-questions.html">প্রশ্নোত্তর</a><span class="nav-title">হিজামা গাইড · PDF রিডার</span></nav>
+<nav id="hijama-reader-nav" aria-label="ওয়েবসাইট নেভিগেশন"><button id="hijamaTocToggle" type="button" aria-expanded="false" aria-controls="hijamaToc"><span class="hijama-menu-lines" aria-hidden="true"><i></i></span> সূচিপত্র</button><a href="./index.html"><i class="hgi hgi-home-01" aria-hidden="true"></i> হোমপেজ</a><a href="./hijama-guide.html">হিজামা বিভাগ</a><a href="./hijama-questions.html">প্রশ্নোত্তর</a><span class="nav-title">হিজামা গাইড · PDF রিডার</span></nav>
+<div id="hijamaTocBackdrop" aria-hidden="true"></div>
+<div id="hijama-reader-layout">
+<aside id="hijamaToc" aria-label="হিজামা বইয়ের সম্পূর্ণ সূচিপত্র">
+  <div id="hijamaTocHeader">
+    <div><h2>বইয়ের সূচিপত্র</h2><small>মূল বইয়ের মুদ্রিত পৃষ্ঠা অনুযায়ী</small></div>
+    <button id="hijamaTocClose" type="button" aria-label="সূচিপত্র বন্ধ করুন">×</button>
+  </div>
+  <label id="hijamaTocSearchWrap">
+    <span id="hijamaTocSearchIcon" aria-hidden="true">⌕</span>
+    <input id="hijamaTocSearch" type="search" placeholder="সূচিপত্রে খুঁজুন…" aria-label="সূচিপত্রে বিষয় খুঁজুন" autocomplete="off">
+    <span id="hijamaTocCount"></span>
+  </label>
+  <nav id="hijamaTocSections" aria-label="বইয়ের অধ্যায় ও পৃষ্ঠা"></nav>
+</aside>
 <div id="app">
-  <div id="status" role="status" aria-live="polite"><div class="inner"><strong id="statusTitle">PDF রিডার প্রস্তুত হচ্ছে…</strong><span id="statusText">মূল বইটি একবার লোড হলে পৃষ্ঠা পরিবর্তন হবে তাৎক্ষণিক।</span><div class="progress"><div id="progressBar"></div></div><button id="retry" type="button" hidden>আবার চেষ্টা করুন</button><label class="file-label" for="localPdf">নিজের PDF বেছে পড়ুন</label><input id="localPdf" type="file" accept=".pdf,application/pdf"><small>নিজের PDF শুধু এই ডিভাইসে খুলবে। মূল বইটি সবার জন্য প্রকাশ করতে <a href="hijama-pdf-publish.html">এখানে PDF আপলোড করুন</a> (প্রশাসক কোড প্রয়োজন)।</small></div></div>
+  <div id="status" role="status" aria-live="polite"><div class="inner"><strong id="statusTitle">PDF রিডার প্রস্তুত হচ্ছে…</strong><span id="statusText">মূল বইটি একবার লোড হলে পৃষ্ঠা পরিবর্তন হবে তাৎক্ষণিক।</span><div class="progress"><div id="progressBar"></div></div><button id="retry" type="button" hidden>আবার চেষ্টা করুন</button></div></div>
   <div id="reader" role="region" aria-label="মূল PDF, টাচ ও মাউস দিয়ে স্ক্রল করুন" tabindex="0"><div id="pages"></div></div>
   <div id="hud" aria-label="বইয়ের পৃষ্ঠা ও Zoom"><button id="prevPage" aria-label="আগের পৃষ্ঠা" title="আগের পৃষ্ঠা">‹</button><input type="number" min="1" max="126" id="pageJump" placeholder="পৃষ্ঠা" aria-label="পৃষ্ঠা নম্বর" inputmode="numeric"><button id="nextPage" aria-label="পরের পৃষ্ঠা" title="পরের পৃষ্ঠা">›</button><span class="reader-version" title="নতুন পৃষ্ঠা-ক্যাশ রিডার">হিজামা</span><span id="offlineBadge" class="offline-state" hidden aria-live="polite"></span><span id="preparedBadge" class="pages-prepared" hidden aria-live="polite"></span><span class="badge" id="pageBadge">১ / ১২৬</span><button id="zoomOut" title="ছোট করুন" aria-label="Zoom out">−</button><span class="pct" id="zoomLevel">100%</span><button id="zoomIn" title="বড় করুন" aria-label="Zoom in">+</button></div>
+</div>
 </div>
 <script>
 (()=>{'use strict';
@@ -83,13 +98,25 @@ const PAGES_CACHE='hijama-rendered-book-pages-v1';
 const PREP_WIDTH=1120;
 let pdfUrl=new URL('./assets/hijama-guide.pdf',document.baseURI).href;
 let resolvedCloudPdf=false;
+const CLOUD_PDF_CACHE_KEY='hijama-published-pdf-url-v1';
 async function resolveCloudPDF(){
  if(resolvedCloudPdf)return;
- const response=await fetch('/api/hijama-pdf-source',{cache:'no-store'});
- if(!response.ok)throw new Error('হিজামা বইয়ের ক্লাউড তথ্য লোড করা যায়নি।');
- const data=await response.json();
- if(!data.available||!data.url)throw new Error('মূল ১২৬ পৃষ্ঠার PDF এখনো ওয়েবসাইটে প্রকাশিত হয়নি।');
- pdfUrl=data.url;resolvedCloudPdf=true;
+ try{
+  const response=await fetch('/api/hijama-pdf-source',{cache:'no-store'});
+  if(!response.ok)throw new Error('হিজামা বইয়ের ক্লাউড তথ্য লোড করা যায়নি (HTTP '+response.status+')');
+  const data=await response.json();
+  if(!data.available||!data.url)throw new Error('হিজামার মূল PDF এখনও সার্ভারে পাওয়া যাচ্ছে না।');
+  const parsed=new URL(data.url);
+  if(parsed.protocol!=='https:')throw new Error('মূল PDF-এর লিংকটি সঠিক নয়।');
+  pdfUrl=parsed.href;resolvedCloudPdf=true;
+  try{localStorage.setItem(CLOUD_PDF_CACHE_KEY,pdfUrl)}catch(_){}
+ }catch(error){
+  // Offline reopening: use the last verified remote PDF URL with CacheStorage.
+  let saved=null;
+  try{saved=localStorage.getItem(CLOUD_PDF_CACHE_KEY)}catch(_){}
+  if(saved&&saved.startsWith('https://')){pdfUrl=saved;resolvedCloudPdf=true;return}
+  throw error;
+ }
 }
 let localFileBytes=null;
 const allowedOrigin=location.origin==='null'?'*':location.origin;
@@ -120,6 +147,7 @@ function setPage(n,notifyParent=true){
  for(const el of container.querySelectorAll('.page.current'))el.classList.remove('current');
  slots[n-1]?.classList.add('current');
  if(notifyParent)notify('page',{page:n});
+ document.dispatchEvent(new CustomEvent('hijama:pagechange',{detail:{page:n}}));
 }
 function loadScript(url){return new Promise((resolve,reject)=>{
  const script=document.createElement('script');script.src=url;script.async=true;
@@ -421,7 +449,7 @@ async function loadPDF(){
  })().catch(e=>{
    console.error('Hijama PDF reader:',e);
    pdf=null;
-   const details=/PDF|পৃষ্ঠার|ক্লাউড|404|Invalid/i.test(String(e))?'মূল বইটি প্রকাশ না হওয়া পর্যন্ত প্রশাসককে একবার PDF আপলোড করতে হবে। আপলোড করার পর সব পাঠক সরাসরি বই খুলতে পারবেন।':'প্রথমবার PDF.js চালাতে ইন্টারনেট প্রয়োজন। ইন্টারনেট সংযোগ পরীক্ষা করুন।';
+   const details=/PDF|পৃষ্ঠার|ক্লাউড|404|Invalid/i.test(String(e))?'বইটি সার্ভার থেকে পাওয়া যাচ্ছে না। সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।':'প্রথমবার PDF.js চালাতে ইন্টারনেট প্রয়োজন। ইন্টারনেট সংযোগ পরীক্ষা করুন।';
    setStatus('PDF রিডার চালু হয়নি',details+' '+String(e?.message||e),true);
    notify('error',{message:String(e?.message||e)});
    throw e;
@@ -429,22 +457,6 @@ async function loadPDF(){
  return loadPromise;
 }
 
-const fileInput=document.getElementById('localPdf');
-fileInput.addEventListener('change',async()=>{
-  const file=fileInput.files?.[0];if(!file)return;
-  if(!(/\.pdf$/i.test(file.name)||file.type==='application/pdf'))return setStatus('PDF ফাইল নির্বাচন করো','শুধু PDF ফাইল পড়া যাবে।',true);
-  fileInput.disabled=true;
-  try{
-    setStatus('বই প্রস্তুত হচ্ছে…','নির্বাচিত PDF এই ডিভাইসেই পড়া হচ্ছে।');
-    document.querySelector('#status .progress').hidden=false;
-    document.getElementById('hud').hidden=false;
-    localFileBytes=await file.arrayBuffer();
-    if(localFileBytes.byteLength<5||new TextDecoder().decode(new Uint8Array(localFileBytes,0,5))!=='%PDF-')throw Error('Invalid PDF');
-    cancelPaints();if(pdf)await pdf.destroy();
-    pdf=null;pageCache=null;slots.length=0;container.replaceChildren();preparedPages.clear();current=1;pendingPage=1;
-    await loadPDF();
-  }catch(e){document.getElementById('hud').hidden=true;document.querySelector('#status .progress').hidden=true;setStatus('বই খোলা যাচ্ছে না',String(e.message||e),true)}finally{fileInput.disabled=false;fileInput.value=''}
-});
 document.getElementById('prevPage').addEventListener('click',()=>navigate(Math.max(1,current-1)));
 document.getElementById('nextPage').addEventListener('click',()=>navigate(Math.min(TOTAL,current+1)));
 const jump=document.getElementById('pageJump');
@@ -491,6 +503,7 @@ setStatus('মূল হিজামা বই খোলা হচ্ছে…',
 loadPDF().catch(()=>{});
 })();
 </script>
+<script src="./assets/hijama-toc.js"></script>
 <script src="./assets/pwa-install.js"></script>
 </body>
 </html>
