@@ -21,7 +21,11 @@
 .pwa-install-status:empty{display:none}
 .pwa-install-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
 .pwa-install-actions button{cursor:pointer;font-family:inherit;border-radius:10px;min-height:39px;font-size:13px;font-weight:750;padding:8px 14px}
-.pwa-install-later{border:1px solid #d5e2d8;color:#64786a;background:transparent}
+.pwa-install-later,.pwa-install-manual-done{border:1px solid #d5e2d8;color:#64786a;background:transparent}
+.pwa-install-manual-done{color:#216449;border-color:#a9cbb3}
+.pwa-install-manual-done[hidden]{display:none!important}
+.pwa-install-actions{flex-wrap:wrap}
+
 .pwa-install-primary{border:1px solid #1b6349;background:#1b6349;color:#fff}
 .pwa-install-primary:hover{background:#135239}
 .pwa-install-primary:disabled{opacity:.65;cursor:wait}
