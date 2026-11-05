@@ -1,17 +1,11 @@
 import {list,put} from '@vercel/blob';
 import {telegramLessons} from '../lib/hijama-training-telegram-catalog.js';
-import {createHmac,timingSafeEqual} from 'node:crypto';
+import {timingSafeEqual} from 'node:crypto';
+import {getSession} from '../lib/hijama-training-session.js';
 const folder='hijama/training/catalog/';
 const sourceShare='https://t.me/hijamatranigvideos';
 const json=(res,status,value)=>res.status(status).setHeader('Cache-Control','private, no-store').setHeader('Content-Type','application/json; charset=utf-8').end(JSON.stringify(value));
 const safeEqual=(a,b)=>{if(typeof a!=='string'||typeof b!=='string')return false;const x=Buffer.from(a),y=Buffer.from(b);return x.length===y.length&&timingSafeEqual(x,y)};
-const sign=x=>createHmac('sha256',process.env.HIJAMA_TRAINING_SESSION_KEY||'').update(x).digest('hex');
-function isAuthenticated(req){
- const raw=(req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('hijama_training_session='))?.split('=')[1];
- if(!raw||!process.env.HIJAMA_TRAINING_SESSION_KEY)return false;
- const [until,signature,extra]=raw.split('.');
- return !extra&&/^[a-z0-9]+$/.test(until||'')&&/^[a-f0-9]{64}$/.test(signature||'')&&parseInt(until,36)>Date.now()&&safeEqual(signature,sign(until));
-}
 const editor=req=>safeEqual(req.headers['x-hijama-catalog-admin'],process.env.HIJAMA_ADMIN_UPLOAD_KEY||'');
 async function scan(){
  let rows=[],cursor;
@@ -40,7 +34,7 @@ async function readAll(){
  return [...unique.values()].sort((a,b)=>a.number-b.number);
 }
 export default async function handler(req,res){
- if(!isAuthenticated(req))return json(res,401,{error:'প্রশিক্ষণ ভিডিও দেখতে প্রথমে পাসওয়ার্ড দিন।'});
+ if(!getSession(req).ok)return json(res,401,{error:'প্রশিক্ষণ ভিডিও দেখতে প্রথমে পাসওয়ার্ড দিন।'});
  if(req.method==='GET'){
   try{
    // Published owner-supplied Telegram post links work as the baseline catalog.
