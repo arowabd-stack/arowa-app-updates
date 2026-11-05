@@ -1,7 +1,7 @@
 import {list,put} from '@vercel/blob';
 import {createHmac,timingSafeEqual} from 'node:crypto';
 const folder='hijama/training/catalog/';
-const sourceShare='https://1024terabox.com/s/1TpfNWgpptOaGKnnfjXaH5Q';
+const sourceShare='https://t.me/hijamatranigvideos';
 const json=(res,status,value)=>res.status(status).setHeader('Cache-Control','private, no-store').setHeader('Content-Type','application/json; charset=utf-8').end(JSON.stringify(value));
 const safeEqual=(a,b)=>{if(typeof a!=='string'||typeof b!=='string')return false;const x=Buffer.from(a),y=Buffer.from(b);return x.length===y.length&&timingSafeEqual(x,y)};
 const sign=x=>createHmac('sha256',process.env.HIJAMA_TRAINING_SESSION_KEY||'').update(x).digest('hex');
@@ -45,7 +45,7 @@ export default async function handler(req,res){
   try{
    const videos=await readAll();
    return json(res,200,{videos,minimumClasses:136,sourceShare,autoSync:false,
-     notice:'TeraBox-এর share link থেকে ভিডিওর সরাসরি স্ট্রিম বা স্বয়ংক্রিয় ফোল্ডার তালিকা পাওয়া যায়নি। যাচাইকৃত ভিডিও লিংক যুক্ত হলেই এখানে দেখা যাবে।'});
+     notice:'Telegram চ্যানেলের আলাদা ভিডিও পোস্টের লিংক বা MP4/HLS স্ট্রিম এখনো তালিকায় সংযুক্ত নেই। চ্যানেলটি আলাদা করে খুলতে পারবেন; যাচাইকৃত ক্লাস-লিংক যুক্ত হলে এখানে দেখা যাবে।'});
   }catch(e){console.error('Hijama videos list failed',e?.message);return json(res,502,{error:'ভিডিও তালিকা লোড করা যায়নি।'});}
  }
  if(req.method!=='POST')return json(res,405,{error:'Method not allowed'});
