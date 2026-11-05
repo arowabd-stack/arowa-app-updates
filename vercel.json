@@ -3,6 +3,15 @@
   "framework": null,
   "headers": [
     {
+      "source": "/ruqyah-guide.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/install.html",
       "headers": [
         {
