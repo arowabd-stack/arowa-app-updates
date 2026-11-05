@@ -7,6 +7,7 @@ if(!root)return;
 const identity=window.HijamaCommunityIdentity;
 const apiQuestions='/api/hijama-reader-questions';
 const apiReplies='/api/hijama-reader-replies';
+const apiNotifications='/api/hijama-reader-notifications';
 const bn=x=>String(x).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
 const el=(tag,cls,txt)=>{
  const node=document.createElement(tag);
@@ -18,7 +19,7 @@ const moderatorMode=new URLSearchParams(location.search).get('moderator')==='1';
 const staff={code:''};
 const controllers=new Map();
 function formatDate(value){
- try{return new Intl.DateTimeFormat('bn-BD',{dateStyle:'medium'}).format(new Date(value));}
+ try{return new Intl.DateTimeFormat('bn-BD',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}
  catch{return '';}
 }
 async function request(url,method='GET',payload,asStaff=false){
@@ -38,7 +39,20 @@ const addQuestion=el('button','community-toggle','আপনার প্রশ�
 addQuestion.type='button';
 addQuestion.setAttribute('aria-expanded','false');
 addQuestion.setAttribute('aria-controls','readerQuestionComposer');
-toolbar.append(description,addQuestion);
+const notificationArea=el('div','reader-notification-area');
+const notificationButton=el('button','reader-notification-button');
+notificationButton.type='button';notificationButton.setAttribute('aria-label','নোটিফিকেশন');
+notificationButton.setAttribute('title','আপনার প্রশ্নের রিপ্লাই নোটিফিকেশন');
+notificationButton.setAttribute('aria-expanded','false');
+notificationButton.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>';
+const notificationBadge=el('span','reader-notification-badge');
+notificationBadge.hidden=true;notificationArea.append(notificationButton,notificationBadge);
+const notificationPanel=el('section','reader-notification-panel');
+notificationPanel.hidden=true;notificationPanel.setAttribute('aria-label','আপনার রিপ্লাই নোটিফিকেশন');
+notificationPanel.append(el('h4','','নতুন রিপ্লাই'));
+const notificationList=el('div','reader-notification-list');
+notificationPanel.append(notificationList);
+toolbar.append(description,notificationArea,addQuestion);
 const questionFormWrap=el('div','community-composer');
 questionFormWrap.id='readerQuestionComposer';
 questionFormWrap.hidden=true;
@@ -71,7 +85,7 @@ form.append(formTitle,nameLabel,author,questionLabel,honeypot,formControls,
 questionFormWrap.append(form);
 const list=el('div','reader-question-items');
 const status=el('p','community-status');status.setAttribute('role','status');
-root.append(toolbar,questionFormWrap,list,status);
+root.append(toolbar,notificationPanel,questionFormWrap,list,status);
 let rows=[],editingId=null,busy=false,loaded=false,focusCard=null;
 const mine=()=>rows.filter(r=>r.mine);
 function ownerLabel(){
@@ -121,7 +135,7 @@ function renderReplies(record){
  const title=el('strong','community-title','পাঠকদের উত্তর');
  const count=el('span','community-count');
  const left=el('div','community-heading-left');left.append(title,count);
- const toggle=el('button','community-toggle','উত্তর দিন');
+ const toggle=el('button','community-toggle','Reply to '+record.name);
  toggle.type='button';toggle.setAttribute('aria-expanded','false');
  const composerId='replyComposer-'+record.id;
  toggle.setAttribute('aria-controls',composerId);
@@ -130,7 +144,7 @@ function renderReplies(record){
  const message=el('p','community-status');message.setAttribute('role','status');
  const composer=el('div','community-composer');composer.hidden=true;composer.id=composerId;
  const replyForm=el('form','community-form');
- const formHeading=el('h4','community-form-title','আপনার উত্তর লিখুন');
+ const formHeading=el('h4','community-form-title','Reply to '+record.name);
  const replyNameLabel=el('label','community-field');replyNameLabel.append(el('span','','আপনার নাম'));
  const replyName=el('input');replyName.type='text';replyName.required=true;
  replyName.minLength=2;replyName.maxLength=70;replyName.autocomplete='name';
@@ -139,7 +153,7 @@ function renderReplies(record){
  const replyAuthor=el('p','community-author');replyAuthor.hidden=true;
  const replyAnswerLabel=el('label','community-field');replyAnswerLabel.append(el('span','','আপনার উত্তর'));
  const replyText=el('textarea');replyText.required=true;replyText.minLength=4;
- replyText.maxLength=1500;replyText.rows=3;replyText.placeholder='আপনার উত্তর লিখুন…';
+ replyText.maxLength=1500;replyText.rows=3;replyText.placeholder='আপনার রিপ্লাই লিখুন…';
  replyAnswerLabel.append(replyText);
  const officialLabel=el('label','community-official-switch');
  const officialCheck=el('input');officialCheck.type='checkbox';
@@ -147,7 +161,7 @@ function renderReplies(record){
  officialLabel.hidden=!moderatorMode||!staff.code;
  const actions=el('div','community-controls');
  const cancel=el('button','community-cancel','বাতিল');cancel.type='button';cancel.hidden=true;
- const submit=el('button','community-submit','উত্তর জমা দিন');submit.type='submit';
+ const submit=el('button','community-submit','রিপ্লাই জমা দিন');submit.type='submit';
  actions.append(cancel,submit);
  replyForm.append(formHeading,replyNameLabel,replyAuthor,replyAnswerLabel,officialLabel,
   actions,el('p','community-disclaimer','পাঠকদের মতামত চিকিৎসা বা ধর্মীয় সিদ্ধান্তের বিকল্প নয়।'));
@@ -165,17 +179,17 @@ function renderReplies(record){
    replyName.value=replyName.value||identity?.getName()||'';}
  }
  function resetReplyEditor(){
-  editing=null;replyText.value='';formHeading.textContent='আপনার উত্তর লিখুন';
-  submit.textContent='উত্তর জমা দিন';cancel.hidden=true;officialCheck.disabled=false;
+  editing=null;replyText.value='';formHeading.textContent='Reply to '+record.name;
+  submit.textContent='রিপ্লাই জমা দিন';cancel.hidden=true;officialCheck.disabled=false;
   officialCheck.checked=false;authorFields();
  }
  function closeReplyEditor(){
-  composer.hidden=true;toggle.textContent='উত্তর দিন';toggle.setAttribute('aria-expanded','false');
+  composer.hidden=true;toggle.textContent='Reply to '+record.name;toggle.setAttribute('aria-expanded','false');
   resetReplyEditor();
  }
  function setReplyBusy(value){
   replyBusy=value;toggle.disabled=value;submit.disabled=value;cancel.disabled=value;
-  submit.textContent=value?'জমা হচ্ছে…':editing?'পরিবর্তন সংরক্ষণ করুন':'উত্তর জমা দিন';
+  submit.textContent=value?'জমা হচ্ছে…':editing?'পরিবর্তন সংরক্ষণ করুন':'রিপ্লাই জমা দিন';
  }
  function editReply(r){
   editing=r.id;replyText.value=r.answer;formHeading.textContent='আপনার উত্তর পরিবর্তন করুন';
@@ -242,7 +256,7 @@ function renderReplies(record){
  }
  toggle.addEventListener('click',()=>{
   composer.hidden=!composer.hidden;
-  toggle.textContent=composer.hidden?'উত্তর দিন':'বন্ধ করুন';
+  toggle.textContent=composer.hidden?'Reply to '+record.name:'বন্ধ করুন';
   toggle.setAttribute('aria-expanded',String(!composer.hidden));
   if(composer.hidden)resetReplyEditor();else{authorFields();replyText.focus();}
  });
@@ -260,7 +274,7 @@ function renderReplies(record){
    await request(apiReplies,id?'PATCH':'POST',payload,!!official);
    if(!id&&!official)identity?.saveName(payload.name);
    closeReplyEditor();await loadReplies(true);
-   message.textContent=id?'উত্তর পরিবর্তন হয়েছে।':'উত্তর জমা হয়েছে।';
+   message.textContent=id?'রিপ্লাই পরিবর্তন হয়েছে।':'রিপ্লাই জমা হয়েছে।';
   }catch(err){message.textContent=err.message;}
   finally{setReplyBusy(false);}
  });
@@ -280,13 +294,16 @@ function render(){
   const card=el('details','question reader-question');
   card.id='reader-'+record.id;
   const summary=el('summary');
-  summary.append(el('b','',bn(85+index)+'.'),el('span','reader-question-title',record.question));
+  const postMain=el('span','reader-post-main');
+  const by=el('span','reader-post-byline');
+  by.append(el('strong','reader-post-name',record.name),el('span','reader-post-separator','·'));
+  const when=el('time','reader-post-time');when.dateTime=record.createdAt;
+  when.textContent=formatDate(record.createdAt);
+  by.append(when);
+  if(record.updatedAt&&record.updatedAt!==record.createdAt)by.append(el('span','reader-post-edited','· সম্পাদিত'));
+  postMain.append(by,el('span','reader-question-title',record.question));
+  summary.append(el('b','reader-post-number',bn(85+index)+'.'),postMain);
   const content=el('div','answer reader-answer');
-  const by=el('div','reader-question-meta');
-  by.append(el('strong','community-person-name',record.name));
-  const when=el('time','community-date');when.dateTime=record.updatedAt||record.createdAt;
-  when.textContent=formatDate(when.dateTime);by.append(when);
-  content.append(by);
   if(record.mine){
    const actions=el('div','community-own-actions reader-item-actions');
    const edit=el('button','','এডিট');edit.type='button';
