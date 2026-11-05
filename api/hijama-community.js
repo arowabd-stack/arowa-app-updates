@@ -3,7 +3,7 @@ import {randomUUID} from 'node:crypto';
 
 const json=(res,status,data)=>{res.status(status).setHeader('Content-Type','application/json; charset=utf-8').setHeader('Cache-Control','no-store').setHeader('X-Content-Type-Options','nosniff').end(JSON.stringify(data))};
 const clean=s=>typeof s==='string'?s.trim().replace(/[\u0000-\u001F\u007F]/g,''):''; 
-const read=async req=>{let b='';for await(const c of req){b+=c;if(b.length>10000)throw new Error('TOO_LARGE')}return JSON.parse(b||'{}')};
+const read=async req=>{if(req.body&&typeof req.body==='object')return req.body;let b='';for await(const c of req){b+=c;if(b.length>10000)throw new Error('TOO_LARGE')}return JSON.parse(b||'{}')};
 const getAll=async(prefix,max=250)=>{let cursor,entries=[];do{const page=await list({prefix,limit:100,cursor});entries.push(...page.blobs);cursor=page.hasMore?page.cursor:undefined;}while(cursor&&entries.length<max);return entries.slice(0,max)};
 export default async function handler(req,res){
  if(!process.env.BLOB_READ_WRITE_TOKEN)return json(res,503,{error:'Cloud storage is not configured.'});
@@ -25,6 +25,6 @@ export default async function handler(req,res){
  if(name.length<2||name.length>70||answer.length<12||answer.length>1500)return json(res,400,{error:'নাম ২–৭০ অক্ষর এবং উত্তর ১২–১৫০০ অক্ষর হতে হবে।'});
  if(/https?:\/\/|www\.|<[^>]*>|(?:\b(?:telegram|whatsapp)\b).{0,15}\d{6}/i.test(name+' '+answer))return json(res,400,{error:'লিংক, বিজ্ঞাপন বা HTML দেওয়া যাবে না।'});
  const data={id:randomUUID(),question,name,answer,createdAt:new Date().toISOString()};
- try{await put('hijama/community/q'+question+'/'+data.id+'.json',JSON.stringify(data),{access:'public',contentType:'application/json',addRandomSuffix:false,cacheControlMaxAge:0});return json(res,201,{ok:true,answer:data})}
+ try{await put('hijama/community/q'+question+'/'+data.id+'.json',JSON.stringify(data),{access:'public',contentType:'application/json',addRandomSuffix:false});return json(res,201,{ok:true,answer:data})}
  catch(e){return json(res,502,{error:'ক্লাউডে সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।'});}
 }
