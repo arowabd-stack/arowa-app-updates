@@ -108,3 +108,23 @@
  .training-local-tools>div:first-child{flex-basis:100%}
  .training-local-picker,.training-local-single{flex:1 1 auto;font-size:11px}
 }
+
+/* Original ZIP video player callout shown only inside the authenticated workspace. */
+.training-original-pack{display:flex;align-items:center;justify-content:space-between;gap:22px;
+ padding:20px 22px;margin:4px 0 20px;border:1px solid #bed9cb;border-radius:16px;
+ background:linear-gradient(110deg,#f1f7f0,#e5f1e9)}
+.training-pack-info{min-width:0}
+.training-pack-info .eyebrow{font-size:10px;letter-spacing:.13em}
+.training-pack-info h2{font-size:20px;line-height:1.5;margin:5px 0 6px;color:#1b533b}
+.training-pack-info p{font-size:12px;line-height:1.8;margin:0 0 5px;color:#456453;max-width:770px}
+.training-pack-info small{display:block;font-size:11px;line-height:1.5;color:#657c6a}
+.training-open-original{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+ background:#1c6749;color:white!important;border:1px solid #1c6749;border-radius:11px;
+ text-align:center;padding:12px 17px;min-height:45px;font-size:13px;font-weight:750;
+ white-space:nowrap;flex:none;text-decoration:none!important}
+.training-open-original:hover{background:#155338;color:white!important}
+.training-open-original .hgi{font-size:18px}
+@media(max-width:750px){
+ .training-original-pack{flex-direction:column;align-items:stretch;padding:17px;gap:14px}
+ .training-open-original{width:100%;white-space:normal}
+}
