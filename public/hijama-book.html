@@ -477,10 +477,8 @@ const fromURL=new URL(location.href).searchParams.get('page');
 if(fromURL)pendingPage=clamp(fromURL);
 else{try{pendingPage=clamp(localStorage.getItem('hijama-last-read-page')||1)}catch(e){}}
 notify('boot',{version:'hijama-pdfjs-v1',page:pendingPage});
-// The public UI release offers a local file reader until the supplied book can be published.
-setStatus('আপনার হিজামা বই পড়ুন','PDF বেছে নিলে বইটি এই ডিভাইসেই খুলবে।');
-document.querySelector('#status .progress').hidden=true;
-document.getElementById('hud').hidden=true;
+setStatus('মূল হিজামা বই খোলা হচ্ছে…','১২৬ পৃষ্ঠার বই সাইট থেকেই লোড হচ্ছে।');
+loadPDF().catch(()=>{});
 })();
 </script>
 </body>
