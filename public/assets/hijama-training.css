@@ -1,0 +1,61 @@
+[hidden]{display:none!important}
+.training-main{width:min(1180px,calc(100% - 38px));margin:auto;padding-bottom:60px}
+.training-header{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:28px 0 24px}
+.training-header h1{font-size:clamp(24px,3vw,38px);line-height:1.35;font-weight:750;margin:7px 0}
+.training-header p{color:var(--muted,#718376);font-size:14px;line-height:1.7;margin:0;max-width:670px}
+.training-logout,.training-next-row button,.training-admin button{border:1px solid var(--line,#cdded2);border-radius:10px;padding:10px 14px;background:var(--surface,#fff);color:var(--ink,#294437);font:700 13px/1.5 inherit;cursor:pointer}
+.training-lock{max-width:490px;background:var(--surface,#fff);margin:36px auto 90px;padding:34px 28px;border:1px solid var(--line,#d6e4dc);border-radius:18px;text-align:center}
+.training-lock-icon{margin:auto auto 16px;width:60px;height:60px;display:grid;place-items:center;border-radius:16px;background:var(--sage,#eaf4ec);color:var(--green,#1c6248)}
+.training-lock-icon .hgi{font-size:32px}
+.training-lock h2{margin:4px 0 9px;font-size:21px;line-height:1.55;color:var(--ink,#244534)}
+.training-lock p{font-size:13px;color:var(--muted,#6e7e73)}
+.training-lock form{margin-top:22px;text-align:left}
+.training-lock label{display:block;margin-bottom:7px;font-size:12px;font-weight:750}
+.training-pass-row{display:flex;gap:8px}
+.training-pass-row input,.training-admin input,.training-admin select,.training-search input{min-width:0;border:1px solid #bfcec3;border-radius:10px;padding:11px 12px;background:var(--surface,#fff);color:var(--ink,#2a4334);font:400 14px/1.4 inherit}
+.training-pass-row input{flex:1}
+.training-pass-row button{flex:none;padding:10px 18px;border:0;border-radius:10px;background:#195f48;color:white;font-weight:750;cursor:pointer}
+.training-message{color:#b24a40!important;font-size:12px!important}
+.training-layout{display:grid;grid-template-columns:minmax(0,1.68fr) minmax(270px,1fr);gap:20px;align-items:start}
+.training-playback,.training-sidebar{border:1px solid var(--line,#d9e4da);background:var(--surface,#fff);border-radius:15px;overflow:hidden}
+.training-player-frame{aspect-ratio:16/9;background:#102720;position:relative}
+.training-player-frame video{display:block;width:100%;height:100%;object-fit:contain;background:#101b17}
+.training-player-placeholder{height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;padding:22px}
+.training-big-play{display:grid;place-items:center;width:65px;height:65px;border-radius:50%;background:#244c3d;margin-bottom:15px}
+.training-big-play i{font-size:28px}
+.training-player-placeholder h2{font-size:18px;font-weight:750;margin:0 0 10px}
+.training-player-placeholder p{max-width:440px;font-size:12px;color:#afc5b9;line-height:1.8;margin:0}
+.training-player-placeholder a{color:#d6f2e1;font-size:12px;margin-top:13px;text-underline-offset:3px}
+.training-now{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:18px}
+.training-now h2{font-size:18px;margin:3px 0;color:var(--ink,#1f4232)}
+.training-now p{font-size:12px;color:var(--muted,#6f8174);margin:0}
+.training-next-row{display:flex;gap:8px}
+.training-next-row button{font-size:12px;padding:8px 10px}
+.training-notice{border-top:1px solid var(--line,#e1e9e2);padding:12px 18px;margin:0;font-size:12px;line-height:1.7;color:var(--muted,#647867)}
+.training-sidebar{min-height:400px;max-height:78vh;display:flex;flex-direction:column}
+.training-sidebar-top{display:flex;justify-content:space-between;gap:10px;padding:15px 15px 10px}
+.training-sidebar-top h2{font-size:17px;margin:0 0 4px;color:var(--ink,#244535)}
+.training-sidebar-top p{font-size:12px;color:var(--muted,#758879);margin:0}
+.training-connected{align-self:flex-start;font-size:10px;border-radius:16px;background:var(--sage,#eff6f0);color:#285f45;padding:4px 8px;white-space:nowrap}
+.training-search{padding:0 14px 11px;display:block}
+.training-search input{width:100%;min-height:41px}
+.training-video-list{overflow:auto;flex:1;min-height:0;padding:2px 10px 10px}
+.training-lesson{display:flex;gap:12px;align-items:center;width:100%;padding:10px 8px;text-align:left;border:0;background:transparent;border-radius:9px;color:var(--ink,#244535);font-family:inherit;cursor:pointer}
+.training-lesson+.training-lesson{border-top:1px solid var(--line,#edf1ed)}
+.training-lesson:hover{background:var(--sage,#f0f6f1)}
+.training-lesson.selected{background:var(--sage,#e9f5ed);outline:1px solid #bad2c2}
+.training-lesson-number{flex:none;width:39px;height:34px;display:grid;place-items:center;font:700 13px/1.4 system-ui;color:#285e48;background:var(--sage,#edf5ee);border-radius:8px}
+.training-lesson-copy{flex:1;min-width:0;display:grid;gap:3px}
+.training-lesson-copy strong{font-size:13px;line-height:1.5;font-weight:700;overflow-wrap:anywhere}
+.training-lesson-copy small{font-size:11px;color:var(--muted,#75887c)}
+.training-sidebar-footer{padding:10px 15px;border-top:1px solid var(--line,#e1e9e3)}
+.training-sidebar-footer a{color:var(--green,#276a4c);font-size:12px}
+.training-admin{border:1px solid var(--line,#d6e6d8);background:var(--surface,#fff);padding:22px;border-radius:14px;margin:24px 0}
+.training-admin h2{font-size:21px;margin:0 0 7px}
+.training-admin p{color:var(--muted,#698073);line-height:1.7;font-size:13px}
+.training-admin-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.training-admin-form label{display:grid;gap:6px;font-size:12px;font-weight:750}
+.training-admin-form input,.training-admin-form select{width:100%}
+.training-admin-form button{align-self:end;background:#165b42;color:#fff;border-color:#165b42}
+@media(max-width:820px){.training-layout{grid-template-columns:1fr}.training-sidebar{max-height:560px}.training-header{margin-top:12px}}
+@media(max-width:560px){.training-main{width:calc(100% - 24px)}.training-header h1{font-size:25px}.training-lock{padding:23px 15px}.training-pass-row{flex-direction:column}.training-pass-row button{min-height:44px}.training-admin-form{grid-template-columns:1fr}.training-next-row{width:100%}.training-next-row button{flex:1}.training-now{padding:13px}}
