@@ -5,8 +5,9 @@ const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
 const lock=el('lockScreen'),work=el('trainingWorkspace'),player=el('trainingPlayer'),
  placeholder=el('trainingPlaceholder'),list=el('videoList'),notice=el('trainingNotice');
 const source=el('sourceLink'),admin=el('trainingAdmin');
-const telegramPanel=el('trainingTelegramPanel'),telegramFrame=el('trainingTelegramFrame'),telegramLink=el('trainingTelegramLink'),downloadButton=el('offlineDownload');
+const telegramPanel=el('trainingTelegramPanel'),telegramFrame=el('trainingTelegramFrame'),telegramLink=el('trainingTelegramLink'),telegramWebLink=el('trainingTelegramWebLink'),downloadButton=el('offlineDownload');
 let videos=new Map(),number=0,hls=null,sourceFolder='',authenticated=false,minimumClasses=137,catalogSyncBusy=false;
+const localFiles=new Map();let duplicateSerials=new Set(),activeObjectUrl=null,activePlaybackKey='';
 let last=0;try{last=Number(localStorage.getItem('hijama-training-last')||0)}catch{}
 const progressKey='hijama-training-playback-position-v1';
 let savedPositions={};try{
@@ -16,22 +17,76 @@ let savedPositions={};try{
 let progressSavedAt=0;
 function saveNativeProgress(finished=false){
  const entry=videos.get(number);
- if(!entry||!['mp4','hls'].includes(entry.type))return;
+ if(!activePlaybackKey)return;
  const time=Number(player.currentTime)||0;
  if(!finished&&(Date.now()-progressSavedAt)<2500)return;
  progressSavedAt=Date.now();
- savedPositions[number]={time:finished?0:time,url:entry.url,updatedAt:Date.now()};
+ savedPositions[number]={time:finished?0:time,url:activePlaybackKey,updatedAt:Date.now()};
  try{localStorage.setItem(progressKey,JSON.stringify(savedPositions))}catch{}
 }
 player.addEventListener('timeupdate',()=>saveNativeProgress(false));
 player.addEventListener('pause',()=>saveNativeProgress(true===player.ended));
 player.addEventListener('loadedmetadata',()=>{
  const entry=videos.get(number),saved=savedPositions[number];
- if(entry&&saved&&saved.url===entry.url&&saved.time>5&&player.duration&&saved.time<player.duration-5){
+ if(saved&&saved.url===activePlaybackKey&&saved.time>5&&player.duration&&saved.time<player.duration-5){
   try{player.currentTime=saved.time}catch{}
  }
 });
 const adminMode=new URLSearchParams(location.search).get('admin')==='1';
+const localStatus=el('trainingLocalStatus');
+const videoExt=/\.(mp4|m4v|mov|webm|mkv)$/i;
+const normalizeDigits=text=>String(text).replace(/[০-৯]/g,c=>String(c.charCodeAt(0)-2534));
+function serialFromFile(file){
+ if(!file||!file.size||!videoExt.test(file.name))return null;
+ const m=/^(\d{1,3})(?=[\s._-]|$)/.exec(normalizeDigits(file.name));
+ const n=m?Number(m[1]):0;
+ return n>=1&&n<=137?n:null;
+}
+function localKey(file){return 'local:'+file.name+':'+file.size+':'+file.lastModified;}
+function setLocalStatus(message){
+ if(localStatus)localStatus.textContent=message;
+ el('trainingClearLocal').hidden=!localFiles.size&&!duplicateSerials.size;
+}
+function updateLocalFiles(files){
+ const grouped=new Map();let ignored=0;
+ for(const file of files){
+  const serial=serialFromFile(file);
+  if(!serial){ignored++;continue}
+  const group=grouped.get(serial)||[];group.push(file);grouped.set(serial,group);
+ }
+ localFiles.clear();duplicateSerials=new Set();
+ for(const [serial,group] of grouped){
+  if(group.length===1)localFiles.set(serial,group[0]);
+  else duplicateSerials.add(serial);
+ }
+ const details=bn(localFiles.size)+'টি ভিডিও মিলেছে।'+(duplicateSerials.size?' '+bn(duplicateSerials.size)+'টি ক্লাসে একাধিক ফাইল; অনুমান করে বেছে নেওয়া হয়নি।':'')+(ignored?' '+bn(ignored)+'টি ফাইল বাদ দেওয়া হয়েছে।':'');
+ setLocalStatus(details+' ভিডিও সরাসরি এই ডিভাইস থেকে চলবে, কোনো আপলোড হবে না।');
+ draw();
+ const target=localFiles.has(number)?number:[...localFiles.keys()].sort((a,b)=>a-b)[0];
+ if(target)play(target,false);
+}
+el('trainingLocalFolder').addEventListener('change',e=>{
+ if(!authenticated)return;
+ updateLocalFiles(Array.from(e.target.files||[]));
+ e.target.value='';
+});
+el('trainingLocalClassButton').addEventListener('click',()=>el('trainingLocalClassFile').click());
+el('trainingLocalClassFile').addEventListener('change',e=>{
+ if(!authenticated)return;
+ const file=e.target.files?.[0];
+ e.target.value='';
+ if(!file)return;
+ if(!file.size||!videoExt.test(file.name)){setLocalStatus('ভিডিও ফাইলটি খালি বা সমর্থিত নয়। MP4, WebM, MOV, M4V বা MKV দিন।');return;}
+ const selected=number||last||1;
+ localFiles.set(selected,file);duplicateSerials.delete(selected);
+ setLocalStatus('ক্লাস '+bn(selected)+'-এর লোকাল ভিডিও নির্বাচন করা হয়েছে: '+file.name);
+ draw();play(selected,false);
+});
+el('trainingClearLocal').addEventListener('click',()=>{
+ localFiles.clear();duplicateSerials.clear();
+ setLocalStatus('লোকাল ভিডিওর তালিকা খালি হয়েছে। আবার ফোল্ডার বেছে নিতে পারবেন।');
+ if(number)play(number,false);else draw();
+});
 async function request(path,options={}){
  const res=await fetch(path,{cache:'no-store',credentials:'same-origin',...options});
  const body=await res.json().catch(()=>({}));
@@ -44,9 +99,12 @@ function setLinks(url){
  document.querySelectorAll('[data-training-source]').forEach(a=>{a.href=sourceFolder||'#';a.hidden=!sourceFolder});
 }
 function clearVideo(){
+ if(activePlaybackKey)saveNativeProgress(false);
  try{player.pause()}catch{}
  if(hls){try{hls.destroy()}catch{}hls=null}
  player.removeAttribute('src');player.load();
+ if(activeObjectUrl){URL.revokeObjectURL(activeObjectUrl);activeObjectUrl=null;}
+ activePlaybackKey='';
  if(telegramPanel){telegramPanel.hidden=true;telegramFrame.src='about:blank';}
 }
 function showPlaceholder(head,body,link){
@@ -61,7 +119,7 @@ function draw(){
  list.replaceChildren();
  const max=currentMax();
  el('trainingCount').textContent='ক্লাস ১–'+bn(max);
- el('connectedCount').textContent=bn(videos.size)+'টি ক্লাস লিংক';
+ el('connectedCount').textContent=bn(videos.size)+'টি ক্লাস · '+bn(localFiles.size)+'টি অফলাইন';
  for(let i=1;i<=max;i++){
   const entry=videos.get(i),name=entry?.title||'হিজামা ক্লাস '+bn(i);
   if(q&&!(String(i)+' '+bn(i)+' '+name).toLowerCase().includes(q))continue;
@@ -73,7 +131,7 @@ function draw(){
   const caption=document.createElement('span');caption.className='training-lesson-copy';
   const strong=document.createElement('strong');strong.textContent=name;
   const small=document.createElement('small');
-  small.textContent=entry?(entry.type==='external'?'Telegram পোস্ট':'ভিডিও ফাইল সংযুক্ত'):'লিংক সংযুক্ত হয়নি';
+  small.textContent=localFiles.has(i)?'ডিভাইসের ভিডিও · অফলাইন':duplicateSerials.has(i)?'একাধিক ফাইল · আলাদা বাছুন':entry?(entry.type==='external'?'Telegram পোস্ট':'ভিডিও ফাইল সংযুক্ত'):'লিংক সংযুক্ত হয়নি';
   caption.append(strong,small);btn.append(index,caption);
   btn.addEventListener('click',()=>play(i,true));frag.append(btn);
  }
@@ -104,8 +162,18 @@ async function play(i,auto=false){
  el('nowTitle').textContent=entry?.title||'হিজামা ক্লাস '+bn(i);
  el('nowMeta').textContent='ক্লাস '+bn(i)+' / '+bn(currentMax());
  draw();clearVideo();
- downloadButton.disabled=!entry||entry.type!=='mp4';
- downloadButton.title=downloadButton.disabled?'Telegram পোস্টের ফাইল এই ওয়েবসাইট থেকে অফলাইনে ডাউনলোড করা যায় না।':'এই MP4 ভিডিওটি ডিভাইসে ডাউনলোড করুন';
+ const localFile=localFiles.get(i);
+ downloadButton.disabled=!!localFile||!entry||entry.type!=='mp4';
+ downloadButton.title=localFile?'ভিডিওটি আগেই আপনার ডিভাইসে আছে।':downloadButton.disabled?'Telegram পোস্টের ফাইল এই ওয়েবসাইট থেকে অফলাইনে ডাউনলোড করা যায় না।':'এই MP4 ভিডিওটি ডিভাইসে ডাউনলোড করুন';
+ if(localFile){
+  placeholder.hidden=true;player.hidden=false;
+  activeObjectUrl=URL.createObjectURL(localFile);
+  activePlaybackKey=localKey(localFile);
+  player.src=activeObjectUrl;
+  if(auto){try{await player.play()}catch(e){notice.textContent='অটোপ্লে আটকে গেছে; ভিডিওতে Play চাপুন।';return;}}
+  notice.textContent='এই ক্লাসটি আপনার ডিভাইস থেকে অফলাইনে চলবে। শেষ হলে পরের নম্বরের লোকাল ভিডিও চালু হবে; মাঝের ফাইল না থাকলে থামবে।';
+  return;
+ }
  if(!entry){showPlaceholder('ক্লাস '+bn(i)+'-এর ভিডিও এখনো সংযুক্ত হয়নি',
   'Telegram-এর আলাদা ভিডিও পোস্টের লিংক বা সরাসরি MP4/HLS স্ট্রিম প্রয়োজন। চ্যানেল লিংক দিয়ে প্লেয়ার অটো-সিঙ্ক হয় না।',sourceFolder);return}
  if(entry.type==='external'){
@@ -114,7 +182,8 @@ async function play(i,auto=false){
   if(match){
    placeholder.hidden=true;player.hidden=true;telegramPanel.hidden=false;
    telegramLink.href=entry.url;
-   telegramFrame.title='ক্লাস '+bn(n)+' Telegram পোস্ট';
+   if(telegramWebLink)telegramWebLink.href='https://web.telegram.org/k/#@hijamatranigvideos?post='+match[1];
+   telegramFrame.title='ক্লাস '+bn(i)+' Telegram পোস্ট';
    telegramFrame.src=entry.url+'?embed=1';
    notice.textContent='Telegram পোস্টের ভিডিও এখানে চালানো সম্ভব হলে প্লে করুন। না চললে নিচের “ভিডিওটি Telegram-এ খুলুন” ব্যবহার করুন। Telegram embed-এর ভিডিও শেষ হলে স্বয়ংক্রিয়ভাবে পরের ক্লাস চালানো সম্ভব নয়।';
    return;
@@ -123,6 +192,7 @@ async function play(i,auto=false){
    'বাইরের ওয়েবসাইটের ভিডিওর শেষ হওয়ার তথ্য পাওয়া যায় না, তাই স্বয়ংক্রিয়ভাবে পরের ক্লাস চলে না।',entry.url);return;
  }
  placeholder.hidden=true;player.hidden=false;
+ activePlaybackKey=entry.url;
  try{
   if(entry.type==='hls')await setupHls(entry.url);else player.src=entry.url;
   if(auto)await player.play();
@@ -130,10 +200,11 @@ async function play(i,auto=false){
  }catch(err){showPlaceholder('ভিডিও চালু হয়নি','উৎসের অনুমতি, URL বা ভিডিওর ফরম্যাট পরীক্ষা করুন। '+err.message,entry.url)}
 }
 function nextPlayable(){
+ if(activePlaybackKey.startsWith('local:'))return localFiles.has(number+1)?number+1:null;
  return [...videos.values()].filter(v=>v.number>number&&(v.type==='mp4'||v.type==='hls'))
   .sort((a,b)=>a.number-b.number)[0]?.number||null;
 }
-player.addEventListener('ended',()=>{saveNativeProgress(true);const next=nextPlayable();if(next)play(next,true);else notice.textContent='সংযুক্ত সব ক্লাস শেষ।'});
+player.addEventListener('ended',()=>{saveNativeProgress(true);const wasLocal=activePlaybackKey.startsWith('local:');const next=nextPlayable();if(next)play(next,true);else notice.textContent=wasLocal&&number<currentMax()?'পরের ক্লাস '+bn(number+1)+'-এর লোকাল ফাইল নেই। আগে সেটি নির্বাচন করুন।':'সংযুক্ত সব ক্লাস শেষ।'});
 player.addEventListener('error',()=>{if(!player.hidden)showPlaceholder('ভিডিও পাওয়া যায়নি','সরাসরি ভিডিও লিংক বর্তমানে কাজ করছে না।',videos.get(number)?.url)});
 el('videoSearch').addEventListener('input',draw);
 downloadButton.addEventListener('click',async()=>{
