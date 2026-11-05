@@ -75,8 +75,8 @@ document.querySelectorAll('details.question[id^="q"]').forEach(question=>{
  }
  function syncAuthor(){
   const mine=myRows();
-  if(mine.length){const display=mine[0].name;nameLabel.hidden=true;author.hidden=false;author.textContent='আপনি: '+display;}
-  else{author.hidden=true;nameLabel.hidden=false;name.value=name.value||identity.getName();}
+  if(mine.length){const display=mine[0].name;nameLabel.hidden=true;name.required=false;author.hidden=false;author.textContent='আপনি: '+display;}
+  else{author.hidden=true;nameLabel.hidden=false;name.required=true;name.value=name.value||identity.getName();}
  }
  function makeEntry(row){
   const entry=el('div','community-entry');
@@ -119,7 +119,7 @@ document.querySelectorAll('details.question[id^="q"]').forEach(question=>{
      if(busy)return;
      editingId=row.id;answer.value=row.answer;title2.textContent='উত্তর পরিবর্তন করুন';
      submit.textContent='পরিবর্তন সংরক্ষণ করুন';cancel.hidden=false;
-     composer.hidden=false;toggle.setAttribute('aria-expanded','true');
+     composer.hidden=false;toggle.setAttribute('aria-expanded','true');toggle.textContent='বন্ধ করুন';
      answer.focus();answer.scrollIntoView({block:'nearest'});
     });
     remove.addEventListener('click',async()=>{
