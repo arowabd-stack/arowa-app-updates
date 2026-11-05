@@ -1,0 +1,71 @@
+<!doctype html><html lang="bn"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#173f35"><title>মূল হিজামা বই প্রকাশ | প্রশাসক</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png">
+<link rel="stylesheet" href="assets/hugeicons.css"><link rel="stylesheet" href="assets/library.css">
+<style>
+.pdf-publish{max-width:700px;margin:48px auto 90px;padding:0 20px;color:var(--ink,#244335)}
+.pdf-publish h1{font-size:28px;font-weight:750;margin:15px 0}.pdf-publish p{color:var(--muted,#647a6b);line-height:1.8}
+.pdf-publish form{border:1px solid var(--line,#d7e3d8);border-radius:15px;padding:23px;background:var(--surface,#fff);display:grid;gap:17px}
+.pdf-publish label{display:grid;gap:7px;font-size:13px;font-weight:700}
+.pdf-publish input{min-height:43px;border:1px solid #b8cfc0;border-radius:10px;padding:10px 12px;font:inherit;background:var(--surface,#fff);color:var(--ink,#234638)}
+.pdf-publish button,.pdf-publish .button{display:inline-flex;justify-content:center;align-items:center;min-height:42px;padding:10px 16px;border:0;border-radius:10px;background:#185b43;color:#fff;font:700 14px/1.4 inherit;cursor:pointer;text-decoration:none}
+.pdf-publish button:disabled{opacity:.65;cursor:wait}
+.pdf-publish progress{width:100%;height:12px;accent-color:#247754}
+.pdf-publish .muted{font-size:12px}
+.pdf-publish [hidden]{display:none!important}
+</style>
+</head><body>
+<header class="site-header"><a href="hijama-guide.html" class="site-brand"><span class="brand-icon"><i class="hgi hgi-jar"></i></span><span>হিজামা গাইড<small>মূল PDF প্রকাশ</small></span></a><nav><a href="hijama-book.html">বইয়ের রিডার</a><a href="hijama-guide.html">হিজামা</a></nav></header>
+<main class="pdf-publish"><span class="eyebrow">PRIVATE ADMIN UPLOAD</span><h1>হিজামার মূল বই ওয়েবসাইটে যুক্ত করুন</h1>
+<p>একবার PDF আপলোড করলে সব পাঠক হিজামা রিডারে মূল বই সরাসরি পড়তে পারবেন। ফাইলটি Vercel Blob-এ সংরক্ষিত হবে, GitHub-এ নয়।</p>
+<p id="current" role="status">বর্তমান বই যাচাই করা হচ্ছে…</p>
+<form id="uploadForm">
+<label for="adminKey">প্রশাসকের আপলোড কোড<input id="adminKey" type="password" autocomplete="off" required placeholder="আপলোড কোড লিখুন"></label>
+<label for="bookFile">হিজামার মূল PDF (সর্বোচ্চ ৩০ MB)<input id="bookFile" type="file" accept="application/pdf,.pdf" required></label>
+<progress id="progress" max="100" value="0" hidden></progress>
+<button id="publish" type="submit">মূল PDF প্রকাশ করুন</button>
+<p id="status" role="status" class="muted"></p>
+</form>
+<p><a href="hijama-book.html">হিজামা বইয়ের রিডারে ফিরে যান</a></p>
+</main>
+<footer class="site-footer"><a href="index.html">হোমপেজ</a><span>প্রশাসকের কোড কাউকে শেয়ার করবেন না।</span></footer>
+<script>
+(async()=>{
+ const form=document.getElementById('uploadForm'),button=document.getElementById('publish'),
+ status=document.getElementById('status'),current=document.getElementById('current'),
+ progress=document.getElementById('progress');
+ async function refresh(){
+  try{const r=await fetch('/api/hijama-pdf-source',{cache:'no-store'});
+    const data=await r.json();
+    current.textContent=data.available?'মূল PDF ওয়েবসাইটে সংযুক্ত আছে। নতুন ফাইল দিলে পরের দর্শকরা সেটিই পড়বেন।':
+      'মূল PDF এখনো ক্লাউডে যুক্ত নেই।';
+  }catch{current.textContent='ক্লাউড ফাইলের অবস্থা যাচাই করা যায়নি।'}
+ }
+ await refresh();
+ form.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const file=document.getElementById('bookFile').files?.[0],
+   code=document.getElementById('adminKey').value.trim();
+  if(!file||!code)return;
+  if(file.size>30*1024*1024||file.size<20000){status.textContent='PDF-এর সাইজ ২০ KB থেকে ৩০ MB হতে হবে।';return;}
+  if((await file.slice(0,5).text())!=='%PDF-'){status.textContent='এটি একটি বৈধ PDF ফাইল নয়।';return;}
+  button.disabled=true;progress.hidden=false;progress.value=0;status.textContent='নিরাপদ আপলোড শুরু হচ্ছে…';
+  try{
+   const mod=await import('https://esm.sh/@vercel/blob@2.8.2/client?bundle');
+   const blob=await mod.upload('hijama/pdf-main/hijama-guide.pdf',file,{
+    access:'public',handleUploadUrl:'/api/hijama-pdf-upload',
+    clientPayload:JSON.stringify({adminCode:code}),multipart:true,
+    onUploadProgress:p=>{progress.value=p.percentage;status.textContent='আপলোড হচ্ছে: '+Math.round(p.percentage)+'%';}
+   });
+   if(!blob?.url)throw Error('আপলোডের ফলাফল পাওয়া যায়নি।');
+   status.textContent='PDF আপলোড সফল হয়েছে। এখন রিডারে মূল বই খুলুন।';
+   progress.value=100;document.getElementById('adminKey').value='';
+   await refresh();
+   button.textContent='আরেকটি PDF আপলোড করুন';
+  }catch(error){status.textContent='আপলোড হয়নি: '+(error?.message||'যোগাযোগের সমস্যা');}
+  finally{button.disabled=false;}
+ });
+})();
+</script>
+<script src="assets/pwa-install.js"></script></body></html>
