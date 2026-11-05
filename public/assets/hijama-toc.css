@@ -1,0 +1,70 @@
+/* Hijama original-book TOC: fixed desktop sidebar, mobile slide-out drawer. */
+#hijama-reader-layout{display:flex;flex:1 1 auto;min-width:0;min-height:0;overflow:hidden}
+#hijama-reader-layout>#app{min-width:0;min-height:0;flex:1 1 auto;height:100%;width:auto}
+#hijamaToc{flex:none;width:clamp(252px,23.5vw,340px);min-height:0;display:flex;flex-direction:column;
+ background:#fcfdfa;border-right:1px solid #d9e5da;color:#254834;z-index:20}
+#hijamaTocHeader{display:flex;flex:none;align-items:center;justify-content:space-between;
+ gap:12px;padding:19px 16px 9px}
+#hijamaTocHeader h2{font-size:17px;line-height:1.5;margin:0;font-weight:800}
+#hijamaTocHeader small{color:#718675;display:block;font-size:11px;font-weight:500}
+#hijamaTocClose{display:none;border:1px solid #dae5dc;border-radius:10px;background:#fff;
+ min-width:35px;min-height:35px;font-size:20px;line-height:1;color:#30543c}
+#hijamaTocSearchWrap{display:flex;align-items:center;gap:8px;margin:4px 13px 12px;
+ padding:0 10px;border:1px solid #d3e1d5;background:#fff;border-radius:11px}
+#hijamaTocSearchWrap:focus-within{outline:2px solid #86b49b;outline-offset:1px}
+#hijamaTocSearchIcon{color:#7a8b7b;font-size:17px}
+#hijamaTocSearch{min-width:0;width:100%;border:none;outline:none;background:transparent;
+ color:#244832;font:500 13px/1.5 system-ui,'Noto Sans Bengali',sans-serif;padding:10px 0}
+#hijamaTocCount{color:#7a8b7b;font-size:10px;white-space:nowrap}
+#hijamaTocSections{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 10px 26px;
+ scrollbar-color:#c0d4c6 transparent;scrollbar-width:thin}
+.hijama-toc-intro{padding:0 3px 10px;display:grid;gap:3px}
+.hijama-toc-group{border-top:1px solid #e4ebe3;padding:5px 0}
+.hijama-toc-section-title{cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+ gap:8px;font-size:12px;font-weight:750;padding:11px 9px;color:#214e38;border-radius:8px;list-style:none}
+.hijama-toc-section-title::-webkit-details-marker{display:none}
+.hijama-toc-section-title::before{content:"▸";font-size:13px;color:#668774;display:inline-block;
+ flex:none;transition:transform .14s;order:0}
+.hijama-toc-group[open]>.hijama-toc-section-title::before{transform:rotate(90deg)}
+.hijama-toc-section-title{justify-content:flex-start}
+.hijama-toc-section-title .hijama-toc-group-range{margin-left:auto;white-space:nowrap;
+ font-size:10px;font-weight:600;color:#7f9283}
+.hijama-toc-section-title:hover{background:#edf5ee}
+.hijama-toc-list{display:grid;padding:2px 2px 6px 9px;gap:2px}
+.hijama-toc-link{display:flex;gap:9px;align-items:center;justify-content:space-between;
+ text-align:left;width:100%;border:0;border-radius:8px;background:transparent;
+ color:#536d59;font:500 12px/1.6 system-ui,'Noto Sans Bengali',sans-serif;padding:8px 9px;cursor:pointer}
+.hijama-toc-link:hover{background:#eff5ef;color:#1c5035}
+.hijama-toc-link.is-active{background:#deede3;color:#18583a;font-weight:750}
+.hijama-toc-num{flex:none;font-size:11px;font-weight:650;color:#5f8069;background:#f3f7f1;
+ border-radius:5px;padding:2px 6px;white-space:nowrap}
+.hijama-toc-link.is-active .hijama-toc-num{background:#c8e2d1;color:#145232}
+.hijama-toc-link:focus-visible,.hijama-toc-section-title:focus-visible{outline:2px solid #367c54;outline-offset:1px}
+.hijama-toc-link[hidden],.hijama-toc-group[hidden],.hijama-toc-intro[hidden]{display:none!important}
+#hijamaTocToggle{display:none;align-items:center;gap:7px;border:1px solid #cfe1d1;
+ border-radius:9px;background:white;color:#16553b;padding:7px 10px;
+ font:750 13px/1.5 system-ui,'Noto Sans Bengali',sans-serif;cursor:pointer}
+#hijamaTocToggle .hijama-menu-lines{display:inline-flex;width:16px;flex-direction:column;gap:3px}
+#hijamaTocToggle .hijama-menu-lines::before,#hijamaTocToggle .hijama-menu-lines::after,
+#hijamaTocToggle .hijama-menu-lines i{content:"";display:block;width:16px;height:2px;
+ border-radius:2px;background:currentColor}
+#hijamaTocBackdrop{display:none}
+@media(max-width:850px){
+ #hijamaTocToggle{display:inline-flex}
+ #hijamaToc{position:fixed;top:0;bottom:0;left:0;width:min(350px,87vw);
+  max-height:100dvh;z-index:210;transform:translateX(-105%);transition:transform .22s ease;
+  box-shadow:15px 0 40px rgba(20,44,29,.11);visibility:hidden}
+ body.hijama-toc-open #hijamaToc{visibility:visible;transform:translateX(0)}
+ body.hijama-toc-open #hijamaTocBackdrop{display:block;position:fixed;inset:0;
+  background:rgba(18,37,24,.45);z-index:205}
+ #hijamaTocClose{display:inline-grid;place-items:center}
+ #hijamaTocHeader{padding:17px 14px 10px}
+ #hijama-reader-layout>#app{width:100%}
+}
+@media(max-width:500px){
+ #hijama-reader-nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+ #hijama-reader-nav::-webkit-scrollbar{display:none}
+ #hijamaTocToggle{font-size:12px;padding:6px 9px;white-space:nowrap}
+ #hijamaTocSections{padding-bottom:max(25px,env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){#hijamaToc{transition:none}}
