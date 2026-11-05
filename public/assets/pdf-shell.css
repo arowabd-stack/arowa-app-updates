@@ -9,3 +9,5 @@ body{background:var(--pdf-paper);color:var(--pdf-ink);font-family:LibraryBangla,
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 
 #hijama-reader-nav{background:var(--pdf-paper);border-color:var(--pdf-line);padding:7px 12px;gap:7px;min-height:58px}#hijama-reader-nav a{font:14px/1.5 LibraryBangla,system-ui,sans-serif;min-height:44px;display:inline-flex;align-items:center;gap:7px;background:var(--pdf-surface);color:var(--pdf-green);border-color:var(--pdf-line);padding:8px 12px}#hijama-reader-nav a:first-child{background:#173f35;color:white}#hijama-reader-nav .nav-title{color:var(--pdf-ink)}
+
+[hidden]{display:none!important}#status strong{font-size:25px;font-weight:600}#status .file-label{font:600 16px/1.6 LibraryBangla,system-ui,sans-serif;min-height:48px;padding:12px 20px;border-radius:12px;background:#173f35;color:white}#status #localPdf:focus-visible+.file-label{outline:3px solid #b79c65}#status .file-label:has(+input:focus-visible){outline:3px solid #b79c65;outline-offset:4px}

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f5f9f4">
-<title>হিজামা গাইড — মূল ১২৬ পৃষ্ঠার PDF Reader</title>
+<title>হিজামা গাইড | PDF রিডার</title>
 <style>
 :root{color-scheme:light;--green:#397652;--bg:#e6ebe6;--muted:#6c806f}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden}
@@ -56,7 +56,7 @@ body{display:flex;flex-direction:column}
 </style>
 <script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem("library-theme"))||"light"}catch(e){}</script><link rel="stylesheet" href="assets/hugeicons.css"><link rel="stylesheet" href="assets/pdf-shell.css"></head>
 <body>
-<nav id="hijama-reader-nav" aria-label="ওয়েবসাইট নেভিগেশন"><a href="./index.html"><i class="hgi hgi-home-01" aria-hidden="true"></i> হোমপেজ</a><a href="./hijama-guide.html">হিজামা বিভাগ</a><a href="./hijama-questions.html">প্রশ্নোত্তর</a><span class="nav-title">হিজামার মূল বই · ১২৬ পৃষ্ঠা</span></nav>
+<nav id="hijama-reader-nav" aria-label="ওয়েবসাইট নেভিগেশন"><a href="./index.html"><i class="hgi hgi-home-01" aria-hidden="true"></i> হোমপেজ</a><a href="./hijama-guide.html">হিজামা বিভাগ</a><a href="./hijama-questions.html">প্রশ্নোত্তর</a><span class="nav-title">হিজামা গাইড · PDF রিডার</span></nav>
 <div id="app">
   <div id="status" role="status" aria-live="polite"><div class="inner"><strong id="statusTitle">PDF রিডার প্রস্তুত হচ্ছে…</strong><span id="statusText">মূল বইটি একবার লোড হলে পৃষ্ঠা পরিবর্তন হবে তাৎক্ষণিক।</span><div class="progress"><div id="progressBar"></div></div><button id="retry" type="button" hidden>আবার চেষ্টা করুন</button><label class="file-label" for="localPdf">নিজের PDF বেছে পড়ুন</label><input id="localPdf" type="file" accept=".pdf,application/pdf"><small>ফাইলটি শুধুই এই ডিভাইসে পড়া হবে; সার্ভারে আপলোড হবে না।</small></div></div>
   <div id="reader" role="region" aria-label="মূল PDF, টাচ ও মাউস দিয়ে স্ক্রল করুন" tabindex="0"><div id="pages"></div></div>
@@ -84,7 +84,7 @@ const PREP_WIDTH=1120;
 const pdfUrl=new URL('./assets/hijama-guide.pdf',document.baseURI).href;
 let localFileBytes=null;
 const allowedOrigin=location.origin==='null'?'*':location.origin;
-const TOTAL=126;
+let TOTAL=126;
 const bn=n=>String(n).replace(/\d/g,d=>String.fromCharCode(0x09e6+Number(d)));
 const clamp=n=>Math.max(1,Math.min(TOTAL,Math.floor(Number(n)||1)));
 const scripts=[
@@ -391,7 +391,7 @@ function zoomTo(value){
 async function loadPDF(){
  if(pdf)return pdf;
  if(loadPromise)return loadPromise;
- setStatus('PDF রিডার চালু হচ্ছে…','বইটি প্রথমবার একবার ডাউনলোড হবে। এরপর পৃষ্ঠায় যেতে আর রিলোড হবে না।');
+ setStatus('PDF রিডার চালু হচ্ছে…',localFileBytes?'নির্বাচিত PDF এই ডিভাইসেই পড়া হচ্ছে।':'বইটি প্রথমবার একবার ডাউনলোড হবে। এরপর পৃষ্ঠায় যেতে আর রিলোড হবে না।');
  loadPromise=(async()=>{
    const lib=await getPdfJS();
    const bytes=await getPdfBytes();
@@ -399,7 +399,8 @@ async function loadPDF(){
    // Only ONE getDocument call. Never reset src or navigate to pdfUrl#page=N.
    const task=lib.getDocument({data:new Uint8Array(bytes),isEvalSupported:false});
    pdf=await task.promise;stats.opens++;
-   if(pdf.numPages!==TOTAL)throw new Error('Expected 126 pages; got '+pdf.numPages);
+   if(localFileBytes){TOTAL=pdf.numPages;document.getElementById('pageJump').max=String(TOTAL)}
+   else if(pdf.numPages!==TOTAL)throw new Error('বইয়ের পৃষ্ঠা সংখ্যা মেলেনি');
    const first=await pdf.getPage(1),vp=first.getViewport({scale:1});baseW=vp.width;baseH=vp.height;
    createSlots();updateSize();status.hidden=true;
    await getPageCache();
@@ -422,13 +423,17 @@ const fileInput=document.getElementById('localPdf');
 fileInput.addEventListener('change',async()=>{
   const file=fileInput.files?.[0];if(!file)return;
   if(!(/\.pdf$/i.test(file.name)||file.type==='application/pdf'))return setStatus('PDF ফাইল নির্বাচন করো','শুধু PDF ফাইল পড়া যাবে।',true);
+  fileInput.disabled=true;
   try{
     setStatus('বই প্রস্তুত হচ্ছে…','নির্বাচিত PDF এই ডিভাইসেই পড়া হচ্ছে।');
+    document.querySelector('#status .progress').hidden=false;
+    document.getElementById('hud').hidden=false;
     localFileBytes=await file.arrayBuffer();
-    if(localFileBytes.byteLength<100000||new TextDecoder().decode(new Uint8Array(localFileBytes,0,5))!=='%PDF-')throw Error('Invalid PDF');
-    pdf=null;pageCache=null;
+    if(localFileBytes.byteLength<5||new TextDecoder().decode(new Uint8Array(localFileBytes,0,5))!=='%PDF-')throw Error('Invalid PDF');
+    cancelPaints();if(pdf)await pdf.destroy();
+    pdf=null;pageCache=null;slots.length=0;container.replaceChildren();preparedPages.clear();current=1;pendingPage=1;
     await loadPDF();
-  }catch(e){setStatus('বই খোলা যাচ্ছে না',String(e.message||e),true)}
+  }catch(e){document.getElementById('hud').hidden=true;document.querySelector('#status .progress').hidden=true;setStatus('বই খোলা যাচ্ছে না',String(e.message||e),true)}finally{fileInput.disabled=false;fileInput.value=''}
 });
 document.getElementById('prevPage').addEventListener('click',()=>navigate(Math.max(1,current-1)));
 document.getElementById('nextPage').addEventListener('click',()=>navigate(Math.min(TOTAL,current+1)));
@@ -472,7 +477,10 @@ const fromURL=new URL(location.href).searchParams.get('page');
 if(fromURL)pendingPage=clamp(fromURL);
 else{try{pendingPage=clamp(localStorage.getItem('hijama-last-read-page')||1)}catch(e){}}
 notify('boot',{version:'hijama-pdfjs-v1',page:pendingPage});
-loadPDF().catch(()=>{});
+// The public UI release offers a local file reader until the supplied book can be published.
+setStatus('আপনার হিজামা বই পড়ুন','PDF বেছে নিলে বইটি এই ডিভাইসেই খুলবে।');
+document.querySelector('#status .progress').hidden=true;
+document.getElementById('hud').hidden=true;
 })();
 </script>
 </body>
