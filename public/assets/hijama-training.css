@@ -80,3 +80,31 @@
  .training-telegram-footer small{font-size:10px}
  #offlineDownload{min-width:100%}
 }
+
+/* Local-first Hijama playback: borrowed behavior from the supplied offline player pack.
+   Files are selected in the browser and NEVER sent to the server. */
+.training-local-tools{display:flex;flex-wrap:wrap;gap:9px 12px;align-items:center;
+ padding:14px 16px;border:1px solid #d7e5dc;border-radius:14px;background:var(--surface,#fff);
+ margin:0 0 8px}
+.training-local-tools>div:first-child{flex:1 1 250px;min-width:0}
+.training-local-tools strong{display:block;font-size:13px;line-height:1.6;color:var(--ink,#234b37)}
+.training-local-tools small{display:block;font-size:11px;line-height:1.6;color:var(--muted,#6c7d70)}
+.training-local-picker,.training-local-single,.training-local-reset{display:inline-flex;
+ align-items:center;justify-content:center;border:1px solid #b8d2c1;
+ background:#ecf5ee;color:#1b5c40;border-radius:9px;padding:8px 12px;
+ min-height:37px;font:700 12px/1.5 var(--font,system-ui);cursor:pointer;white-space:nowrap}
+.training-local-picker{position:relative;overflow:hidden}
+.training-local-picker>input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.training-local-picker:focus-within{outline:2px solid #31825c;outline-offset:2px}
+.training-local-picker:hover,.training-local-single:hover{background:#dfeee3}
+.training-local-reset{background:transparent;color:var(--muted,#6c7d70);border-color:#d7e5dc}
+.training-local-status{margin:0 0 12px;font-size:11px;line-height:1.7;
+ color:var(--muted,#6c7d70)}
+.training-telegram-footer{justify-content:flex-start}
+.training-telegram-footer a{white-space:nowrap}
+.training-telegram-footer small{flex:1 1 100%;font-size:11px}
+@media(max-width:640px){
+ .training-local-tools{padding:12px;gap:8px}
+ .training-local-tools>div:first-child{flex-basis:100%}
+ .training-local-picker,.training-local-single{flex:1 1 auto;font-size:11px}
+}
