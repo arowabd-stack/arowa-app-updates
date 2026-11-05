@@ -1,0 +1,92 @@
+/* Ruqyah book library: separate page, no reader sidebar. 21 independent cards. */
+.ruqyah-guide-main{max-width:1240px;padding-bottom:95px}
+.ruqyah-guide-intro{padding:38px 0 34px;border-bottom:1px solid var(--line);
+ display:grid;grid-template-columns:minmax(0,1.05fr) minmax(330px,.85fr);
+ gap:clamp(24px,4vw,65px);align-items:center}
+.ruqyah-guide-heading .eyebrow{letter-spacing:.13em;font-size:11px;color:#5d8467}
+.ruqyah-guide-heading h1{font-size:clamp(35px,4vw,52px);line-height:1.3;letter-spacing:-.03em;
+ font-weight:550;margin:0 0 14px;color:var(--forest)}
+.ruqyah-guide-heading p{margin:0;max-width:650px;font-size:16px;line-height:1.85;color:var(--muted)}
+.ruqyah-global-search{border:1px solid #d7e4d9;background:var(--surface);
+ border-radius:18px;padding:23px 22px 18px;box-shadow:0 12px 36px #163d2e09}
+.ruqyah-global-search>label{display:block;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px}
+.ruqyah-global-input{display:flex;align-items:center;gap:10px;min-height:51px;border:1px solid #cdded0;
+ border-radius:11px;background:var(--paper);padding:5px 6px 5px 13px}
+.ruqyah-global-input>.hgi{font-size:21px;flex:none;color:#628a6e}
+.ruqyah-global-input input{background:transparent;border:0;outline:0;flex:1;width:100%;min-width:0;
+ color:var(--ink);font:14px/1.5 var(--font);padding:9px 0}
+.ruqyah-global-input input::placeholder{color:#91a096}
+.ruqyah-global-input:focus-within{border-color:#53956e;box-shadow:0 0 0 3px #52895e17}
+.ruqyah-global-input button{flex:none;display:inline-flex;align-items:center;gap:5px;
+ border:0;border-radius:8px;min-height:39px;padding:8px 13px;
+ background:#205f46;color:white;font:750 13px/1.4 var(--font)}
+.ruqyah-global-input button .hgi{font-size:16px}
+.ruqyah-global-search>p{font-size:12px;color:var(--muted);margin:10px 0 0}
+.ruqyah-catalog-heading{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:37px 0 21px}
+.ruqyah-catalog-heading .eyebrow{font-size:10px;margin:0 0 2px;color:#748575}
+.ruqyah-catalog-heading h2{font-size:clamp(24px,3vw,30px);font-weight:550;margin:0;line-height:1.4}
+.ruqyah-catalog-count{color:#819184;font-size:13px;padding-bottom:5px;white-space:nowrap}
+.ruqyah-book-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:21px}
+.ruqyah-book-card{--cardInk:var(--forest);background:var(--surface);border:1px solid #dde6dc;
+ border-radius:20px;min-width:0;min-height:293px;padding:24px 25px 19px;
+ display:flex;flex-direction:column;gap:0;color:var(--cardInk);
+ transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;position:relative}
+.ruqyah-book-card:hover{transform:translateY(-3px);border-color:#c4d8c4;
+ box-shadow:0 13px 35px #193f3113}
+.ruqyah-book-card:focus-visible{outline:3px solid #438361;outline-offset:3px}
+.ruqyah-book-ivory{background:#f4efe5;border-color:#e7decb}
+.ruqyah-book-sage{background:#eef3eb;border-color:#d7e5d2}
+.ruqyah-book-white{background:var(--surface)}
+.ruqyah-book-featured{background:#e7f1e8;border-color:#c7ddcf}
+.ruqyah-book-card-top,.ruqyah-book-card-bottom{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.ruqyah-book-icon{display:grid;place-items:center;flex:none;width:58px;height:58px;border:1px solid #ceddcd;
+ background:#ffffff6c;color:#396c50;border-radius:16px}
+.ruqyah-book-icon>.hgi{font-size:30px}
+.ruqyah-book-ivory .ruqyah-book-icon{border-color:#e0d2b9;color:#887145}
+.ruqyah-book-featured .ruqyah-book-icon{background:#f9fcf7;color:#1d6545}
+.ruqyah-book-tag{border:1px solid #d1ddcf;color:#728774;background:#ffffff54;
+ border-radius:20px;padding:4px 10px;font-size:11px;line-height:1.5;white-space:nowrap}
+.ruqyah-book-ivory .ruqyah-book-tag{border-color:#dfd2bb;color:#8e826b}
+.ruqyah-book-card-copy{padding:24px 0 21px}
+.ruqyah-book-overline{font:750 10px/1.5 system-ui,-apple-system,sans-serif;
+ color:#879785;letter-spacing:.15em}
+.ruqyah-book-card-copy h2{font-size:clamp(20px,1.65vw,25px);line-height:1.55;letter-spacing:-.014em;
+ font-weight:560;margin:6px 0 9px;overflow-wrap:anywhere}
+.ruqyah-book-card-copy p{font-size:13px;color:#7a8879;margin:0;line-height:1.7}
+.ruqyah-book-card-bottom{border-top:1px solid #aebfac5c;margin-top:auto;padding-top:14px;
+ color:#758977;font-size:12px}
+.ruqyah-book-open{display:flex;gap:7px;align-items:center;color:#266143;font-weight:750;white-space:nowrap}
+.ruqyah-book-open>.hgi{font-size:18px;transition:transform .2s ease}
+.ruqyah-book-card:hover .ruqyah-book-open>.hgi{transform:translateX(4px)}
+html[data-theme=dark] .ruqyah-book-card{background:var(--surface);border-color:var(--line);color:var(--ink)}
+html[data-theme=dark] .ruqyah-book-icon{background:var(--paper);border-color:var(--line);color:var(--green)}
+html[data-theme=dark] .ruqyah-book-tag{border-color:var(--line);color:var(--muted)}
+html[data-theme=dark] .ruqyah-book-card-copy p{color:var(--muted)}
+html[data-theme=dark] .ruqyah-book-card-bottom{border-color:var(--line)}
+html[data-theme=dark] .ruqyah-guide-heading h1{color:var(--ink)}
+@media(max-width:1020px){
+ .ruqyah-guide-main{padding-inline:25px}
+ .ruqyah-guide-intro{gap:25px;grid-template-columns:1fr .85fr}
+ .ruqyah-book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ruqyah-book-card{min-height:260px}
+}
+@media(max-width:720px){
+ .ruqyah-guide-main{padding-inline:17px}
+ .ruqyah-guide-intro{grid-template-columns:1fr;padding:28px 0 22px;gap:20px}
+ .ruqyah-guide-heading h1{font-size:34px}
+ .ruqyah-guide-heading p{font-size:14px}
+ .ruqyah-global-search{padding:17px}
+ .ruqyah-catalog-heading{margin-top:25px}
+}
+@media(max-width:570px){
+ .ruqyah-book-grid{grid-template-columns:1fr;gap:13px}
+ .ruqyah-book-card{min-height:218px;padding:19px 19px 16px;border-radius:17px}
+ .ruqyah-book-icon{width:50px;height:50px;border-radius:13px}
+ .ruqyah-book-icon>.hgi{font-size:27px}
+ .ruqyah-book-card-copy{padding:17px 0 17px}
+ .ruqyah-book-card-copy h2{font-size:22px;margin:5px 0}
+ .ruqyah-global-input input{font-size:12px}
+ .ruqyah-global-input button{padding:8px 10px}
+ .ruqyah-catalog-count{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.ruqyah-book-card,.ruqyah-book-open>.hgi{transition:none}}
