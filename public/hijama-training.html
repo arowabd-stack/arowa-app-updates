@@ -33,15 +33,6 @@
 <p id="loginMessage" class="training-message" role="status"></p>
 </section>
 <section class="training-workspace" id="trainingWorkspace" hidden aria-label="ভিডিও প্লেলিস্ট">
-<section class="training-original-pack" aria-label="আপনার ZIP-এর সম্পূর্ণ ভিডিও প্লেয়ার">
- <div class="training-pack-info">
-  <span class="eyebrow">ORIGINAL PLAYER PACK</span>
-  <h2>১৩৭ ক্লাসের সম্পূর্ণ ভিডিও প্লেয়ার</h2>
-  <p>তোমার দেওয়া ZIP-এর আসল HTML প্লেয়ার। নাম বা সিরিয়াল দিয়ে ক্লাস খুঁজুন, ডাউনলোড করা ভিডিও ফোল্ডার নির্বাচন করুন, শেষ দেখা ক্লাস মনে রাখুন এবং ফাইল থাকলে পরেরটি চালান।</p>
-  <small>Telegram পোস্ট লিংক শুধু Telegram-এ খুলবে; সরাসরি ভিডিও চালাতে ডিভাইসের ভিডিও ফাইল প্রয়োজন।</small>
- </div>
- <a class="training-open-original" href="/api/hijama-playlist-player" target="_blank" rel="noopener noreferrer"><i class="hgi hgi-play" aria-hidden="true"></i> ZIP-এর সম্পূর্ণ প্লেয়ার খুলুন</a>
-</section>
 <div class="training-layout">
 <section class="training-playback">
 <div class="training-local-tools">
@@ -65,13 +56,13 @@
 <a id="sourceLink" href="#" data-training-source hidden target="_blank" rel="noopener noreferrer">Telegram চ্যানেল খুলুন</a>
 </div>
 </div>
-<div class="training-now"><div><span class="eyebrow">NOW PLAYING</span><h2 id="nowTitle">ক্লাস নির্বাচন করুন</h2><p id="nowMeta">হিজামা প্রশিক্ষণ</p></div><div class="training-next-row"><button type="button" id="previousClass">আগের ক্লাস</button><button type="button" id="nextClass">পরের ক্লাস</button><button type="button" id="offlineDownload" disabled title="সরাসরি MP4 লিংক না থাকলে ডাউনলোড করা যায় না">অফলাইন ডাউনলোড</button></div></div>
+<div class="training-now"><div><span class="eyebrow">NOW PLAYING</span><h2 id="nowTitle">ক্লাস নির্বাচন করুন</h2><p id="nowMeta">হিজামা প্রশিক্ষণ</p></div><div class="training-next-row"><button type="button" id="previousClass">আগের ক্লাস</button><button type="button" id="nextClass">পরের ক্লাস</button><button type="button" id="offlineDownload" disabled title="ক্লাস নির্বাচন করুন">ক্লাস ডাউনলোড</button></div></div>
 <p class="training-notice" id="trainingNotice">১–১৩৭টি ক্লাসের পোস্ট যোগ করা আছে। Telegram পোস্ট ওয়েবসাইটে দেখানো হবে; Telegram-এর সীমাবদ্ধতায় autoplay এবং অফলাইন ডাউনলোড কেবল পোস্ট লিংক থেকে সম্ভব নয়।</p>
 </section>
 <aside class="training-sidebar">
 <div class="training-sidebar-top"><div><h2>ভিডিও প্লেলিস্ট</h2><p id="trainingCount">ক্লাস ১–১৩৭</p></div><span id="connectedCount" class="training-connected">১৩৭টি পোস্ট</span></div>
 <label class="training-search"><span class="sr-only">ক্লাস খুঁজুন</span><input type="search" id="videoSearch" placeholder="ক্লাস নম্বর বা নাম খুঁজুন"></label>
-<div id="videoList" class="training-video-list" role="list"></div>
+<div id="videoList" class="training-video-list" role="list"></div><p class="training-download-hint">প্রতি ক্লাসের পাশে ডাউনলোডের অপশন রয়েছে। Telegram-এর ভিডিও হলে পোস্ট খুলে Telegram থেকে ডাউনলোড করুন; সরাসরি MP4 থাকলে এখানে ফাইল সেভ হবে।</p>
 <div class="training-sidebar-footer"><a href="#" data-training-source hidden target="_blank" rel="noopener noreferrer">ভিডিওর Telegram চ্যানেল খুলুন</a></div>
 </aside>
 </div>
