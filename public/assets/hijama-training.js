@@ -5,7 +5,7 @@ const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
 const lock=el('lockScreen'),work=el('trainingWorkspace'),player=el('trainingPlayer'),
  placeholder=el('trainingPlaceholder'),list=el('videoList'),notice=el('trainingNotice');
 const source=el('sourceLink'),admin=el('trainingAdmin');
-let videos=new Map(),number=0,hls=null,sourceFolder='',authenticated=false,minimumClasses=137;
+let videos=new Map(),number=0,hls=null,sourceFolder='',authenticated=false,minimumClasses=137,catalogSyncBusy=false;
 let last=0;try{last=Number(localStorage.getItem('hijama-training-last')||0)}catch{}
 const adminMode=new URLSearchParams(location.search).get('admin')==='1';
 async function request(path,options={}){
@@ -109,6 +109,33 @@ async function refresh(){
  await play(selected,false);
  notice.textContent=data.notice||'সরাসরি MP4/HLS ভিডিও লিংক দিলে এখানে চালু হবে।';
 }
+async function syncNewClasses(){
+ if(!authenticated||catalogSyncBusy||document.hidden)return;
+ catalogSyncBusy=true;
+ try{
+  const data=await request('/api/hijama-training-videos');
+  const incoming=Array.isArray(data.videos)?data.videos:[];
+  const nextMinimum=Math.max(137,Number(data.minimumClasses)||137);
+  const hasChanges=nextMinimum!==minimumClasses||incoming.length!==videos.size||
+   incoming.some(v=>{
+    const old=videos.get(v.number);
+    return !old||old.url!==v.url||old.title!==v.title||old.type!==v.type;
+   });
+  if(hasChanges){
+   const previousMax=currentMax();
+   videos=new Map(incoming.map(v=>[v.number,v]));
+   minimumClasses=nextMinimum;
+   setLinks(data.sourceShare);
+   draw();
+   if(currentMax()>previousMax){
+    notice.textContent='নতুন ক্লাস '+bn(previousMax+1)+'–'+bn(currentMax())+' প্লেলিস্টে যোগ হয়েছে।';
+   }
+  }
+ }catch(error){console.warn('Training catalog refresh unavailable:',error?.message);}
+ finally{catalogSyncBusy=false;}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncNewClasses()});
+window.setInterval(syncNewClasses,60000);
 function setAuth(ok){
  authenticated=ok;lock.hidden=ok;work.hidden=!ok;el('logout').hidden=!ok;
  admin.hidden=!ok||!adminMode;
