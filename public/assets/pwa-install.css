@@ -37,3 +37,12 @@
  .pwa-install-actions{margin-top:13px}
 }
 @media(prefers-reduced-motion:reduce){.pwa-install-card{animation:none}}
+
+/* Install affordance remains accessible after dismissing the prompt. */
+.pwa-header-install{border:1px solid #aac7b4;border-radius:9px;background:var(--surface,#fff);
+ color:var(--green,#1d654a);font:700 12px/1.4 inherit;cursor:pointer;padding:7px 11px;
+ min-height:35px;white-space:nowrap;margin-left:auto}
+.pwa-header-install:focus-visible{outline:2px solid #347956;outline-offset:3px}
+.pwa-header-install:hover{background:var(--sage,#eef6ef)}
+.site-header .pwa-header-install+.theme-toggle{margin-left:0}
+@media(max-width:520px){.pwa-header-install{font-size:11px;padding:6px 8px;min-height:33px}}
