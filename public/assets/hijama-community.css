@@ -220,3 +220,24 @@
  .reader-reply-heading .community-toggle{white-space:normal;text-align:right}
  .reader-notification-panel{padding:10px}
 }
+
+/* Empty reader threads show only Reply to [author]; connectors begin with real replies. */
+.reader-replies{border:0;padding:0;margin:8px 0 0;position:relative}
+.reader-replies:before{content:none!important}
+.reader-reply-heading{margin:0}
+.reader-reply-heading .community-toggle{padding:4px 0;min-height:28px;margin:0}
+.reader-reply-posts{display:none}
+.reader-replies.has-replies .reader-reply-posts{
+ display:grid;position:relative;gap:4px;
+ margin:5px 0 0 10px;padding:3px 0 3px 19px;
+ border-left:2px solid #cadbd1;
+}
+.reader-reply-posts .community-person:before{content:none}
+.reader-replies.has-replies .reader-reply-posts .community-person:before{
+ content:"";position:absolute;display:block;left:-21px;top:18px;
+ width:15px;height:2px;background:#cadbd1;
+}
+@media(max-width:650px){
+ .reader-replies.has-replies .reader-reply-posts{margin-left:6px;padding-left:15px}
+ .reader-replies.has-replies .reader-reply-posts .community-person:before{left:-17px;width:12px}
+}
