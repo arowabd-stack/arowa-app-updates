@@ -55,9 +55,9 @@ function reset(){
 function syncAuthor(){
  const own=mine();
  if(own.length){
-  nameLabel.hidden=true;author.hidden=false;author.textContent='আপনি: '+own[0].name;
+  nameLabel.hidden=true;name.required=false;author.hidden=false;author.textContent='আপনি: '+own[0].name;
  }else{
-  nameLabel.hidden=false;author.hidden=true;name.value=name.value||identity?.getName()||'';
+  nameLabel.hidden=false;name.required=true;author.hidden=true;name.value=name.value||identity?.getName()||'';
  }
 }
 function setBusy(value){
@@ -102,7 +102,7 @@ function render(){
     if(busy)return;
     editingId=row.id;text.value=row.question;formTitle.textContent='প্রশ্ন পরিবর্তন করুন';
     submit.textContent='পরিবর্তন সংরক্ষণ করুন';cancel.hidden=false;
-    composer.hidden=false;toggle.setAttribute('aria-expanded','true');
+    composer.hidden=false;toggle.setAttribute('aria-expanded','true');toggle.textContent='বন্ধ করুন';
     text.focus();text.scrollIntoView({block:'nearest'});
    });
    remove.addEventListener('click',async()=>{
