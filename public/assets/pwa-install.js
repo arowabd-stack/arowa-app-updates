@@ -18,7 +18,7 @@ const get=(key)=>{try{return localStorage.getItem(key)}catch{return null}};
 const set=(key,value)=>{try{localStorage.setItem(key,String(value))}catch{}};
 const sessionGet=()=>{try{return sessionStorage.getItem(SESSION)==='1'}catch{return false}};
 const sessionSet=()=>{try{sessionStorage.setItem(SESSION,'1')}catch{}};
-if(installed()||get(INSTALLED)==='1'||Number(get(KEY)||0)>Date.now()||sessionGet())return;
+if(installed())return;
 
 let event=null,panel=null,opened=false,timer=null;
 const css=document.createElement('link');
@@ -47,8 +47,8 @@ function dismiss(days=14){
 function closeInstalled(){
  set(INSTALLED,'1');panel?.remove();panel=null;opened=false;event=null;
 }
-function show(){
- if(opened||installed()||get(INSTALLED)==='1'||Number(get(KEY)||0)>Date.now())return;
+function show(force=false){
+ if(opened||installed()||(!force&&(Number(get(KEY)||0)>Date.now()||sessionGet())))return;
  if(!document.body||document.visibilityState==='hidden')return;
  opened=true;sessionSet();
  const section=document.createElement('aside');
@@ -118,6 +118,18 @@ window.addEventListener('beforeinstallprompt',e=>{
  }
 });
 window.addEventListener('appinstalled',closeInstalled);
+// The explicit install control stays available even if an earlier invitation was dismissed.
+window.openRuqyahInstall=()=>show(true);
+function addInstallControl(){
+ const header=document.querySelector('.site-header');
+ if(!header||header.querySelector('.pwa-header-install')||installed())return;
+ const button=document.createElement('button');
+ button.type='button';button.className='pwa-header-install';
+ button.textContent='ইনস্টল';button.setAttribute('aria-label','অ্যাপ ইনস্টল করার উপায়');
+ button.addEventListener('click',()=>show(true));
+ const before=header.querySelector('.theme-toggle');
+ if(before)header.insertBefore(button,before);else header.append(button);
+}
 const mode=window.matchMedia?.('(display-mode: standalone)');
 mode?.addEventListener?.('change',()=>{if(installed())closeInstalled()});
 function init(){
@@ -125,6 +137,6 @@ function init(){
  if(timer)clearTimeout(timer);
  timer=setTimeout(show,3500);
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
-else init();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{addInstallControl();init()},{once:true});
+else{addInstallControl();init()};
 })();
