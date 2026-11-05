@@ -44,7 +44,7 @@ export default async function handler(req,res){
  if(req.method==='GET'){
   try{
    const videos=await readAll();
-   return json(res,200,{videos,minimumClasses:136,sourceShare,autoSync:false,
+   return json(res,200,{videos,minimumClasses:137,sourceShare,autoSync:false,
      notice:'Telegram চ্যানেলের আলাদা ভিডিও পোস্টের লিংক বা MP4/HLS স্ট্রিম এখনো তালিকায় সংযুক্ত নেই। চ্যানেলটি আলাদা করে খুলতে পারবেন; যাচাইকৃত ক্লাস-লিংক যুক্ত হলে এখানে দেখা যাবে।'});
   }catch(e){console.error('Hijama videos list failed',e?.message);return json(res,502,{error:'ভিডিও তালিকা লোড করা যায়নি।'});}
  }
