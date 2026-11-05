@@ -114,7 +114,7 @@ addQuestion.addEventListener('click',()=>{
  if(!questionFormWrap.hidden){closeQuestionEditor();return;}
  openQuestionEditor();
 });
-formCancel.addEventListener('click',()=>openQuestionEditor());
+formCancel.addEventListener('click',closeQuestionEditor);
 function renderReplies(record){
  const area=el('section','reader-replies');
  const head=el('div','community-heading reader-reply-heading');
@@ -247,7 +247,7 @@ function renderReplies(record){
   if(composer.hidden)resetReplyEditor();else{authorFields();replyText.focus();}
  });
  officialCheck.addEventListener('change',authorFields);
- cancel.addEventListener('click',()=>{resetReplyEditor();replyText.focus()});
+ cancel.addEventListener('click',closeReplyEditor);
  replyForm.addEventListener('submit',async event=>{
   event.preventDefault();if(replyBusy||!replyForm.reportValidity())return;
   if(!identity?.key&&!officialCheck.checked){message.textContent='এই ব্রাউজারে সম্পাদনার পরিচয় তৈরি করা যায়নি।';return;}
@@ -370,7 +370,7 @@ if(moderatorMode){
     if(!data.admin)throw Error('কোডটি সঠিক নয়।');
    }
    pass.value='';msg.textContent='কর্তৃপক্ষের পরিচয় সক্রিয় হয়েছে।';
-   for(const controller of controllers.values())controller.load(true);
+   for(const [id,controller] of controllers){if(document.getElementById('reader-'+id)?.open)controller.load(true);}
   }catch(err){staff.code=previous;msg.textContent=err.message;}
  });
  inner.append(label,apply,msg);staffPanel.append(sum,inner);
