@@ -29,3 +29,8 @@
 .pwa-header-install:focus-visible,.pwa-share-actions button:focus-visible{outline:2px solid #27754e;outline-offset:3px}
 .pwa-share-actions button:disabled{opacity:.65;cursor:wait}
 @media(max-width:640px){.pwa-header-install{padding:6px 8px;font-size:11px;min-height:33px}.pwa-share-content{border-radius:18px}}
+
+.pwa-install-loading{display:flex;align-items:center;justify-content:center;gap:10px;min-height:44px}
+.pwa-install-loading::before{content:'';display:inline-block;width:18px;height:18px;flex:none;border:2px solid #c5dacc;border-top-color:#215b43;border-radius:50%;animation:pwa-loading-spin .8s linear infinite}
+@keyframes pwa-loading-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.pwa-install-loading::before{animation:none}}
