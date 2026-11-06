@@ -191,11 +191,8 @@ function init(){
  if(installButton)installButton.addEventListener('click',()=>{if(isKnownInstalled())openApp();else showInstall()});
  const urlInput=document.getElementById('shareLinkInput');
  if(urlInput){urlInput.value=shareUrl;urlInput.hidden=true}
- if(landing&&!isKnownInstalled()){
-  // This is deliberately NOT session-snoozed: closing then reloading the share
-  // link must present the invitation again. No other app page autoshows it.
-  window.setTimeout(showInstall,550);
- }else if(landing&&isKnownInstalled()){
+ // Keep installation user-triggered; opening the shared page shows its button.
+ if(landing&&isKnownInstalled()){
   const status=document.getElementById('installLandingStatus');
   if(status)status.textContent='অ্যাপটি এই ডিভাইসে ইনস্টল করা আছে।';
   window.setTimeout(showOpenApp,550);
