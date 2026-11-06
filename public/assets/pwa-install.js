@@ -109,78 +109,46 @@ function showOpenApp(){
  updateLandingUI();
  open.focus({preventScroll:true});
 }
-function showInstall(){
- if(isKnownInstalled()){
-  syncHeader();showOpenApp();
-  const target=document.getElementById('installLandingStatus');
-  if(target)target.textContent='অ্যাপটি ইনস্টল করা আছে। খুলতে নিচের বাটন ব্যবহার করুন।';
-  return;
+let installBusy=false;
+function installStatus(message){
+ let target=document.getElementById('installLandingStatus')||document.getElementById('pwaInlineInstallStatus');
+ if(!target){
+  target=make('p','pwa-inline-install-status');target.id='pwaInlineInstallStatus';target.setAttribute('role','status');
+  const header=document.querySelector('.site-header');
+  if(header)header.after(target);else document.body.append(target);
  }
- if(dialog)return;
- backdrop=make('div','pwa-install-overlay');
- backdrop.setAttribute('aria-hidden','true');
- dialog=make('section','pwa-install-card');
- dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');
- dialog.setAttribute('aria-labelledby','pwaInstallTitle');
- dialog.setAttribute('aria-describedby','pwaInstallDescription');
- const header=make('div','pwa-install-header');
- const img=make('img','pwa-install-icon');img.src=new URL('icons/icon-192.png',new URL('./',location.href)).href;img.alt='';img.width=46;img.height=46;
- const copy=make('div','pwa-install-copy');
- copy.append(make('div','pwa-install-eyebrow','রুকইয়াহ ও হিজামা'),
-  make('h2','','আপনার ডিভাইসে অ্যাপ ইনস্টল করুন'));
- copy.querySelector('h2').id='pwaInstallTitle';
- const subtitle=make('p','','পড়ুন ও ব্যবহার করুন অ্যাপের মতো, সহজেই হোম স্ক্রিন থেকে।');
- subtitle.id='pwaInstallDescription';copy.append(subtitle);
- const close=make('button','pwa-install-close','×');close.type='button';
- close.setAttribute('aria-label','ইনস্টল পপআপ বন্ধ করুন');close.addEventListener('click',closeDialog);
- header.append(img,copy,close);
- const steps=make('p','pwa-install-steps',guide());steps.hidden=true;
- const status=make('p','pwa-install-status','');status.setAttribute('role','status');
- const actions=make('div','pwa-install-actions');
- const later=make('button','pwa-install-later','এখন নয়');later.type='button';later.addEventListener('click',closeDialog);
- const action=make('button','pwa-install-primary',deferredPrompt?'অ্যাপ ইনস্টল করুন':'ইনস্টল করার নিয়ম');
- action.type='button';
- action.addEventListener('click',async()=>{
-  if(!deferredPrompt){
-   steps.hidden=!steps.hidden;
-   action.textContent=steps.hidden?'ইনস্টল করার নিয়ম':'নিয়ম লুকান';
-   return;
-  }
-  const event=deferredPrompt;deferredPrompt=null;
-  action.disabled=true;action.textContent='ইনস্টল হচ্ছে…';
-  try{
-   await event.prompt();
-   const choice=await event.userChoice;
-   if(choice?.outcome==='accepted'){
-    closeDialog();
-    const msg=document.getElementById('installLandingStatus');
-    if(msg)msg.textContent='ইনস্টলের অনুমতি দেওয়া হয়েছে। অ্যাপটি তৈরি হলে হোম স্ক্রিনে দেখা যাবে।';
-   }else{steps.hidden=false;action.textContent='ইনস্টল করার নিয়ম';action.disabled=false}
-  }catch{
-   steps.hidden=false;action.textContent='ইনস্টল করার নিয়ম';action.disabled=false;
-   status.textContent='ব্রাউজারের ইনস্টল বাটন পাওয়া যায়নি। নিচের ধাপগুলো অনুসরণ করুন।';
-  }
- });
- // Safari does not provide a reliable appinstalled confirmation when users
- // manually add to the Home Screen. Show instructions rather than falsely
- // declaring installation complete based only on a button tap.
- actions.append(later,action);
- dialog.append(header,steps,status,actions);
- document.body.append(backdrop,dialog);
- close.focus({preventScroll:true});
+ target.textContent=message;
+}
+async function showInstall(){
+ if(isKnownInstalled()){openApp();return}
+ if(installBusy)return;
+ if(!deferredPrompt){installStatus(guide());return}
+ const event=deferredPrompt;deferredPrompt=null;installBusy=true;
+ const buttons=[...document.querySelectorAll('#shareLandingInstall,.pwa-header-install')];
+ buttons.forEach(button=>{button.disabled=true;button.setAttribute('aria-busy','true')});
+ try{
+  // The click goes straight to the browser's native confirmation.
+  await event.prompt();
+  const choice=await event.userChoice;
+  if(!isKnownInstalled())installStatus(choice?.outcome==='accepted'
+   ?'ইনস্টলের অনুমতি দেওয়া হয়েছে। অ্যাপটি তৈরি হলে হোম স্ক্রিনে দেখা যাবে।'
+   :'ইনস্টল করা হয়নি। আবার চেষ্টা করতে ব্রাউজারের Install অপশন ব্যবহার করুন।');
+ }catch{installStatus(guide())}
+ finally{
+  installBusy=false;
+  buttons.forEach(button=>{button.disabled=false;button.removeAttribute('aria-busy')});
+ }
 }
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&dialog)closeDialog()});
 window.addEventListener('beforeinstallprompt',event=>{
  event.preventDefault();deferredPrompt=event;
- const action=dialog?.querySelector('.pwa-install-primary');
- if(action){action.disabled=false;action.textContent='অ্যাপ ইনস্টল করুন';}
 });
 window.addEventListener('appinstalled',()=>{
  setInstalled();syncHeader();showOpenApp();
  const status=document.getElementById('installLandingStatus');
  if(status)status.textContent='অ্যাপটি ইনস্টল হয়েছে। এখন অ্যাপ খুলতে পারবেন।';
 });
-match?.addEventListener?.('change',()=>{if(installed()){setInstalled();syncHeader();showOpenApp()}});
+match?.addEventListener?.('change',()=>{if(installed()){setInstalled();syncHeader()}});
 window.addEventListener('pageshow',syncHeader);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncHeader()});
 function init(){
@@ -195,7 +163,6 @@ function init(){
  if(landing&&isKnownInstalled()){
   const status=document.getElementById('installLandingStatus');
   if(status)status.textContent='অ্যাপটি এই ডিভাইসে ইনস্টল করা আছে।';
-  window.setTimeout(showOpenApp,550);
  }
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
