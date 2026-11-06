@@ -1,6 +1,6 @@
 /* Ruqyah Reader v27: one PDF asset, cache-on-demand, byte-range support offline. */
 'use strict';
-const APP_VERSION='v57-20261105-install-state-fix';
+const APP_VERSION='v58-20261106-quran-script-sources';
 const SHELL_CACHE='ruqyah-pwa-shell-'+APP_VERSION;
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const PDF_URL=new URL('assets/ruqyah-book.pdf',self.registration.scope).href;
@@ -12,7 +12,12 @@ const SHELL_FILES=['index.html','install.html','manifest.webmanifest','icons/ico
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(SHELL_CACHE);
-  await cache.addAll(SHELL_FILES.map(path=>new URL(path,self.registration.scope).href));
+  const fontListURL=new URL('data/reader-fonts.json',self.registration.scope).href;
+  const fontResponse=await fetch(fontListURL,{cache:'reload'});
+  if(!fontResponse.ok)throw new Error('Arabic offline font manifest unavailable');
+  const fontFiles=await fontResponse.json();
+  const scriptureFiles=['data/quran-uthmani-v1.js','data/quran-indopak-v1.js','data/quran-sources.json','data/reader-fonts.json','assets/reader-scripture.js'];
+  await cache.addAll([...SHELL_FILES,...scriptureFiles,...fontFiles].map(path=>new URL(path,self.registration.scope).href));
   await self.skipWaiting();
  })());
 });
@@ -70,6 +75,9 @@ self.addEventListener('fetch',event=>{
  // the single offline-cached PDF file, otherwise offline navigation 404s.
  if(u.pathname===new URL(PDF_URL).pathname){event.respondWith(servePDF(event));return;}
  if(u.pathname.endsWith('/assets/book21-direct-v38.js')){event.respondWith((async()=>{const c=await caches.open(SHELL_CACHE);return (await c.match(req))||fetch(req)})());return;}
+ if(/\/(?:data\/quran-(?:uthmani|indopak)-v1\.js|assets\/reader-scripture\.js)$/.test(u.pathname)){
+  event.respondWith((async()=>{const c=await caches.open(SHELL_CACHE);return (await c.match(req))||fetch(req)})());return;
+ }
  if(u.pathname.includes('/assets/hijama/')||u.pathname.includes('/assets/fonts/')||u.pathname.includes('/assets/ruqyah-fonts/')||/\/(?:assets\/[^/]+\.(?:css|js)|data\/hijama-book\.json)$/.test(u.pathname)){
   event.respondWith((async()=>{const c=await caches.open(SHELL_CACHE);try{const r=await fetch(req);if(r.ok)event.waitUntil(c.put(req,r.clone()).catch(()=>{}));return r}catch(e){return (await c.match(req))||Response.error()}})());return;
  }
