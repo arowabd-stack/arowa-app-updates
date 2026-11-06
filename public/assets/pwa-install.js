@@ -43,6 +43,34 @@ function openApp(){
   status('হোম স্ক্রিন বা অ্যাপ তালিকার রুকইয়াহ আইকনে চাপুন। কম্পিউটারে Chrome-এর মেনু থেকে Open in app ব্যবহার করুন।');
  }
 }
+let launchDialog=null,launchFocus=null;
+function closeLaunchDialog(){
+ if(!launchDialog)return;
+ const dialog=launchDialog;launchDialog=null;
+ if(typeof dialog.close==='function'&&dialog.open)dialog.close();
+ dialog.remove();launchFocus?.focus?.({preventScroll:true});
+}
+function showLaunchDialog(){
+ if(standalone()||launchDialog)return;
+ launchFocus=document.activeElement;
+ const dialog=document.createElement('dialog');launchDialog=dialog;
+ dialog.className='pwa-launch-dialog';
+ dialog.setAttribute('aria-labelledby','pwaLaunchTitle');
+ dialog.setAttribute('aria-describedby','pwaLaunchDescription');
+ const icon=document.createElement('img');icon.src=new URL('icons/icon-192.png',appUrl).href;icon.alt='';icon.width=64;icon.height=64;
+ const title=document.createElement('h2');title.id='pwaLaunchTitle';title.textContent='অ্যাপ খুলুন';
+ const description=document.createElement('p');description.id='pwaLaunchDescription';
+ description.textContent='ইনস্টল শেষ হলে নিচের বাটনে চাপ দিয়ে অ্যাপ খুলুন।';
+ const actions=document.createElement('div');actions.className='pwa-launch-actions';
+ const later=document.createElement('button');later.type='button';later.textContent='পরে';later.onclick=closeLaunchDialog;
+ const open=document.createElement('button');open.type='button';open.className='pwa-launch-open';open.textContent='অ্যাপ খুলুন';
+ open.onclick=()=>{closeLaunchDialog();openApp()};
+ actions.append(later,open);dialog.append(icon,title,description,actions);document.body.append(dialog);
+ dialog.addEventListener('cancel',event=>{event.preventDefault();closeLaunchDialog()});
+ if(typeof dialog.showModal==='function')dialog.showModal();
+ else{dialog.setAttribute('open','');dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true')}
+ open.focus({preventScroll:true});
+}
 function prepareLaunch(){
  if(settling||settled)return;
  settling=true;busy=true;
@@ -51,9 +79,10 @@ function prepareLaunch(){
   settleTimer=null;settling=false;settled=true;busy=false;sync();
   if(standalone()){if(landing)openApp();return}
   // Android's appinstalled event may precede actual WebAPK installation.
-  // Three seconds is a UI waiting period, never proof of OS readiness.
+  // Four seconds is a UI waiting period, never proof of OS readiness.
   status('ইনস্টল শেষ হলে অ্যাপ খুলুন বাটনে চাপুন। না খুললে হোম স্ক্রিনের অ্যাপ আইকনে চাপুন।');
- },3000);
+  showLaunchDialog();
+ },4000);
 }
 function sync(){
  let button=document.querySelector('.pwa-header-install');
@@ -107,6 +136,7 @@ window.addEventListener('appinstalled',()=>{
 });
 mode?.addEventListener?.('change',()=>{
  if(standalone()){
+  closeLaunchDialog();
   if(settleTimer!==null)window.clearTimeout(settleTimer);
   settleTimer=null;settling=false;busy=false;
   if(landing)openApp();

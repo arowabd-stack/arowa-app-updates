@@ -34,3 +34,13 @@
 .pwa-install-loading::before{content:'';display:inline-block;width:18px;height:18px;flex:none;border:2px solid #c5dacc;border-top-color:#215b43;border-radius:50%;animation:pwa-loading-spin .8s linear infinite}
 @keyframes pwa-loading-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.pwa-install-loading::before{animation:none}}
+
+.pwa-launch-dialog{box-sizing:border-box;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:28px;border:1px solid #d5e3d9;border-radius:22px;background:var(--surface,#fff);color:var(--ink,#234b36);text-align:center;font:15px/1.8 system-ui,'Noto Sans Bengali',sans-serif;box-shadow:0 24px 80px #0e241940}
+.pwa-launch-dialog::backdrop{background:#0e241980;backdrop-filter:blur(3px)}
+.pwa-launch-dialog img{display:block;margin:0 auto 14px;border-radius:16px}
+.pwa-launch-dialog h2{font-size:24px;line-height:1.5;margin:0 0 8px}
+.pwa-launch-dialog p{margin:0;color:var(--muted,#62776a)}
+.pwa-launch-actions{display:flex;gap:10px;justify-content:center;margin-top:24px}
+.pwa-launch-actions button{flex:1;min-height:44px;padding:10px 16px;border:1px solid #b7cdbf;border-radius:10px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.pwa-launch-actions .pwa-launch-open{background:#1c6548;border-color:#1c6548;color:white;font-weight:700}
+.pwa-launch-actions button:focus-visible{outline:2px solid #27754e;outline-offset:3px}
