@@ -11,18 +11,30 @@ if(statSync(source).size<10000000)throw new Error('Original 21-chapter book app 
 const scripts=html.match(/<script\b[^>]*>[\s\S]*?<\/script>/g)||[];
 const legacyFont=scripts.filter(s=>s.includes("const storeKey='ruqyah-arabic-font-v8';"));
 if(legacyFont.length!==1)throw new Error('Legacy Arabic font controller not found');
+const quranSources={};
 for(const script of ['uthmani','indopak']){
  const payload=readFileSync('public/data/quran-'+script+'-v1.js','utf8');
  const match=payload.match(/window\.RuqyahQuranSources\.\w+=(\{[^\n]*\});/);
  if(!match)throw new Error('Invalid '+script+' payload');
  const data=JSON.parse(match[1]);
+ quranSources[script]=data;
  const manifest=JSON.parse(readFileSync('public/data/quran-sources.json','utf8'));
  if(createHash('sha256').update(payload).digest('hex')!==manifest.sources[script].payloadSha256)throw new Error('Changed '+script+' text; regenerate from SQLite');
  const keys=[...html.matchAll(/class="[^"]*\bverified-verse\b[^"]*"[^>]*data-key="([^"]+)"|data-key="([^"]+)"[^>]*class="[^"]*\bverified-verse\b/g)].map(m=>m[1]||m[2]);
  if(!keys.length||keys.some(key=>typeof data[key]!=='string'))throw new Error('Missing '+script+' verse; regenerate scripts/export-quran.py');
 }
+// The initial HTML must also contain the default Indopak text. A cached legacy
+// font controller or a disabled/failed script must not expose Uthmani as Indopak.
+let seededVerses=0;
+html=html.replace(/(<section class="[^"]*\bverified-verse\b[^"]*"[^>]*data-key="(\d+:\d+)"[^>]*>[\s\S]*?<p class="verified-arabic[^>]*>)[\s\S]*?(<\/p>)/g,(_,start,key,end)=>{
+ const text=quranSources.indopak[key];
+ if(typeof text!=='string')throw new Error('Missing default Indopak verse: '+key);
+ seededVerses++;
+ return start+text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+end;
+});
+const totalVerseNodes=(html.match(/<section class="[^"]*\bverified-verse\b[^"]*"/g)||[]).length;
+if(!seededVerses||seededVerses!==totalVerseNodes)throw new Error('Incomplete initial Indopak scripture');
 html=html.replace(legacyFont[0],'<script src="./data/quran-uthmani-v1.js"></script>\n<script src="./data/quran-indopak-v1.js"></script>\n<script src="./assets/reader-scripture.js"></script>');
-html=html.replace('aria-label="আরবি ফন্ট" id="arabicFontSelect"','aria-label="আরবি পাঠ ও ফন্ট" id="arabicFontSelect"');
 function replaceOnce(needle,replacement){
  if(html.split(needle).length!==2)throw new Error('Scripture integration point missing or duplicated: '+needle.slice(0,70));
  html=html.replace(needle,replacement);

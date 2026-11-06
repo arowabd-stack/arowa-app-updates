@@ -2,7 +2,7 @@
 
 Visual release matching the approved homepage preview: forest green, warm paper surfaces, Bangla typography and official Hugeicons. Mobile navigation uses 44px controls. The Ruqyah reader groups settings in a native dialog and shows source notes in a drawer. Dua text, translations and audio mappings retain their original sources; Quran verses now use the selected writing system as described below. Questions retain the existing public corpus, answer file and local draft key.
 
-Build with `node build-v38.mjs`. Vercel serves `public/`. The generated reader and font payloads are emitted during the build. Service-worker shell version: v58.
+Build with `node build-v38.mjs`. Vercel serves `public/`. The generated reader and font payloads are emitted during the build. Service-worker shell version: v59.
 
 This release includes UI and previously public content only. The supplied Hijama book text, illustrations and original PDF are excluded. The existing Hijama PDF reader retains its local file picker.
 
@@ -10,7 +10,7 @@ The local Hijama reader starts with a file chooser instead of requesting an unpu
 
 ## Arabic writing systems
 
-The Arabic dropdown changes both Quran text and font: `noorehuda`/`indopak` use `quran_indo.db`; `uthmani`/`hafs` use `quran.db`. Existing preferences retain their storage key. Hadith, dua, Bengali translations, verse identifiers, audio nodes and the scanned PDF remain unchanged.
+The explicit Arabic writing-system selector changes Quran text and offers only the matching fonts: `noorehuda`/`indopak` use `quran_indo.db`; `uthmani`/`hafs` use `quran.db`. The script choice uses `ruqyah-arabic-script-v1`, with migration from the existing font preference. Font preferences retain their original storage key. The settings button displays the active script, and the settings preview shows Fatiha 1:6 so the initial alif and its marks can be checked. Initial HTML is also seeded with the default database Indopak text before any JavaScript runs. Hadith, dua, Bengali translations, verse identifiers, audio nodes and the scanned PDF remain unchanged.
 
 The original databases each contain 6,236 verses in 114 surahs, in the FTS3 `verses(sura, ayah, text, primary)` table. The web app bundles only its 649 referenced verses (840 displayed instances) in two local, synchronous payloads. This avoids a browser SQLite dependency, remote Quran-text requests and asynchronous switching races. All source Unicode, including spaces and marks, is retained verbatim. `public/data/quran-sources.json` records the pinned upstream revision and SHA-256 checksums.
 
@@ -18,4 +18,4 @@ To regenerate after adding a new keyed verse, download both databases from the e
 
 Tajweed rebinds its text snapshots after every switch; annotations are applied only to exact matching spelling. Search refreshes its Arabic index. The service worker precaches both text payloads plus the selectable Arabic fonts; the PDF cache name and range handling are retained.
 
-Validation (Node 24+): `npm install --prefix tests`, then `npm test --prefix tests`. The tests execute the generated reader in a DOM environment and the real service worker in a cache/network harness. They cover all 840 verse instances, four font selections, representative verses from eight surahs, tajweed toggles, saved preferences, search, audio source/time/identity, bookmark and note storage, offline resources and PDF byte ranges. They do not simulate real audio streaming, browser layout or PDF rasterization.
+Validation (Node 24+): `npm install --prefix tests`, then `npm test --prefix tests`. The tests execute the generated reader in a DOM environment and the real service worker in a cache/network harness. They cover all 840 verse instances, four font selections, exact Fatiha 1:6 alif/kasra versus alef-wasla checks, initial HTML without scripts, conflicting legacy preferences, representative verses from eight surahs, tajweed toggles, saved preferences, search, audio source/time/identity, bookmark and note storage, offline resources and PDF byte ranges. They do not simulate real audio streaming, browser layout or PDF rasterization.
