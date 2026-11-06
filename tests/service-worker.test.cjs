@@ -23,7 +23,10 @@ test('offline install caches both text sources/fonts and preserves PDF range rea
       const values = stores.get(name);
       return {
         async put(req, response) {values.set(key(req), response.clone());},
-        async match(req) {return values.get(key(req))?.clone();},
+        async match(req, options) {
+          if(options?.ignoreSearch){const url=new URL(key(req));for(const [stored,response] of values){const other=new URL(stored);if(other.origin===url.origin&&other.pathname===url.pathname)return response.clone();}}
+          return values.get(key(req))?.clone();
+        },
         async addAll(urls) {for (const url of urls) values.set(url, await fetch(url));}
       };
     },
@@ -65,6 +68,9 @@ test('offline install caches both text sources/fonts and preserves PDF range rea
     assert.deepEqual(Buffer.from(await response.arrayBuffer()), readFileSync(path.join(root, file)), file);
   }
   assert.equal((await get('reader.html', {}, 'navigate')).status, 200);
+  const versioned=await get('assets/reader-scripture.js?v=60');
+  assert.equal(versioned.status,200);
+  assert.deepEqual(Buffer.from(await versioned.arrayBuffer()),readFileSync(path.join(root,'assets/reader-scripture.js')));
   const partial = await get('assets/ruqyah-book.pdf?page=77', {Range: 'bytes=0-1023'});
   assert.equal(partial.status, 206);
   assert.equal(partial.headers.get('Content-Range'), `bytes 0-1023/${pdf.length}`);

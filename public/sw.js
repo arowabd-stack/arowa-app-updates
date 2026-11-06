@@ -1,6 +1,6 @@
 /* Ruqyah Reader v27: one PDF asset, cache-on-demand, byte-range support offline. */
 'use strict';
-const APP_VERSION='v59-20261106-explicit-arabic-script';
+const APP_VERSION='v60-20261106-script-upgrade-cache';
 const SHELL_CACHE='ruqyah-pwa-shell-'+APP_VERSION;
 const PDF_CACHE='ruqyah-original-pdf-v1';
 const PDF_URL=new URL('assets/ruqyah-book.pdf',self.registration.scope).href;
@@ -76,7 +76,7 @@ self.addEventListener('fetch',event=>{
  if(u.pathname===new URL(PDF_URL).pathname){event.respondWith(servePDF(event));return;}
  if(u.pathname.endsWith('/assets/book21-direct-v38.js')){event.respondWith((async()=>{const c=await caches.open(SHELL_CACHE);return (await c.match(req))||fetch(req)})());return;}
  if(/\/(?:data\/quran-(?:uthmani|indopak)-v1\.js|assets\/reader-scripture\.js)$/.test(u.pathname)){
-  event.respondWith((async()=>{const c=await caches.open(SHELL_CACHE);return (await c.match(req))||fetch(req)})());return;
+  event.respondWith((async()=>{const c=await caches.open(SHELL_CACHE);return (await c.match(req,{ignoreSearch:true}))||fetch(req)})());return;
  }
  if(u.pathname.includes('/assets/hijama/')||u.pathname.includes('/assets/fonts/')||u.pathname.includes('/assets/ruqyah-fonts/')||/\/(?:assets\/[^/]+\.(?:css|js)|data\/hijama-book\.json)$/.test(u.pathname)){
   event.respondWith((async()=>{const c=await caches.open(SHELL_CACHE);try{const r=await fetch(req);if(r.ok)event.waitUntil(c.put(req,r.clone()).catch(()=>{}));return r}catch(e){return (await c.match(req))||Response.error()}})());return;

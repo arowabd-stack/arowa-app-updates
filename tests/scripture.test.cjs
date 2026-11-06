@@ -10,7 +10,7 @@ function reader(saved = {}) {
   // Execute the actual generated app in order, with local script resources inlined.
   // Layout, network audio playback and PDF rasterization need a real-browser check.
   const html = read('public/reader.html').replace(/<script\b[^>]*\bsrc="\.\/([^"]+)"[^>]*><\/script>/g,
-    (_, file) => '<script>' + read('public/' + file).replace(/<\/script/gi, '<\\/script') + '</script>');
+    (_, file) => '<script>' + read('public/' + file.split('?')[0]).replace(/<\/script/gi, '<\\/script') + '</script>');
   const errors = [];
   const virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(error.message));

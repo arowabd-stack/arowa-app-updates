@@ -34,7 +34,7 @@ html=html.replace(/(<section class="[^"]*\bverified-verse\b[^"]*"[^>]*data-key="
 });
 const totalVerseNodes=(html.match(/<section class="[^"]*\bverified-verse\b[^"]*"/g)||[]).length;
 if(!seededVerses||seededVerses!==totalVerseNodes)throw new Error('Incomplete initial Indopak scripture');
-html=html.replace(legacyFont[0],'<script src="./data/quran-uthmani-v1.js"></script>\n<script src="./data/quran-indopak-v1.js"></script>\n<script src="./assets/reader-scripture.js"></script>');
+html=html.replace(legacyFont[0],'<script src="./data/quran-uthmani-v1.js"></script>\n<script src="./data/quran-indopak-v1.js"></script>\n<script src="./assets/reader-scripture.js?v=60"></script>');
 function replaceOnce(needle,replacement){
  if(html.split(needle).length!==2)throw new Error('Scripture integration point missing or duplicated: '+needle.slice(0,70));
  html=html.replace(needle,replacement);
