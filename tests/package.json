@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "scripts": {"test": "node --test scripture.test.cjs service-worker.test.cjs"},
+  "devDependencies": {"jsdom": "31.0.0"},
+  "engines": {"node": ">=24"}
+}

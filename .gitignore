@@ -4,3 +4,5 @@ public/viewer-version.json
 public/assets/ruqyah-fonts/
 public/qa-mobile.html
 __pycache__/
+node_modules/
+public/data/reader-fonts.json

@@ -5,6 +5,44 @@ const source='public/app-source-v36.html';
 const target='public/reader.html';
 let html=readFileSync(source,'utf8');
 if(statSync(source).size<10000000)throw new Error('Original 21-chapter book app is incomplete');
+// Replace the legacy font-only switch before audio, tajweed and search take snapshots.
+// These local payloads are lossless SQLite exports, keyed by surah:ayah.
+// Restrict the match to a single script (the preceding chapter navigation must survive).
+const scripts=html.match(/<script\b[^>]*>[\s\S]*?<\/script>/g)||[];
+const legacyFont=scripts.filter(s=>s.includes("const storeKey='ruqyah-arabic-font-v8';"));
+if(legacyFont.length!==1)throw new Error('Legacy Arabic font controller not found');
+for(const script of ['uthmani','indopak']){
+ const payload=readFileSync('public/data/quran-'+script+'-v1.js','utf8');
+ const match=payload.match(/window\.RuqyahQuranSources\.\w+=(\{[^\n]*\});/);
+ if(!match)throw new Error('Invalid '+script+' payload');
+ const data=JSON.parse(match[1]);
+ const manifest=JSON.parse(readFileSync('public/data/quran-sources.json','utf8'));
+ if(createHash('sha256').update(payload).digest('hex')!==manifest.sources[script].payloadSha256)throw new Error('Changed '+script+' text; regenerate from SQLite');
+ const keys=[...html.matchAll(/class="[^"]*\bverified-verse\b[^"]*"[^>]*data-key="([^"]+)"|data-key="([^"]+)"[^>]*class="[^"]*\bverified-verse\b/g)].map(m=>m[1]||m[2]);
+ if(!keys.length||keys.some(key=>typeof data[key]!=='string'))throw new Error('Missing '+script+' verse; regenerate scripts/export-quran.py');
+}
+html=html.replace(legacyFont[0],'<script src="./data/quran-uthmani-v1.js"></script>\n<script src="./data/quran-indopak-v1.js"></script>\n<script src="./assets/reader-scripture.js"></script>');
+html=html.replace('aria-label="আরবি ফন্ট" id="arabicFontSelect"','aria-label="আরবি পাঠ ও ফন্ট" id="arabicFontSelect"');
+function replaceOnce(needle,replacement){
+ if(html.split(needle).length!==2)throw new Error('Scripture integration point missing or duplicated: '+needle.slice(0,70));
+ html=html.replace(needle,replacement);
+}
+replaceOnce('originals.set(node,node.textContent.trim());','originals.set(node,node.textContent);');
+replaceOnce("button.addEventListener('click',()=>toggleState(!enabled));",`window.addEventListener('ruqyah:scripture-changed',()=>{
+ for(const node of sourceNodes)originals.set(node,node.textContent);
+ for(const key of verses.keys())paintKey(key);
+ statusUpdate();
+});
+button.addEventListener('click',()=>toggleState(!enabled));`);
+replaceOnce('// Each named tag corresponds to an identifiable source section/topic rather than an invented diagnosis.',`window.addEventListener('ruqyah:scripture-changed',()=>{
+ for(const record of entries){
+  if(record.type!=='verse')continue;
+  record.fields.arabic=content(record.el,'.verified-arabic');
+  record.normalized.arabic=norm(record.fields.arabic);
+ }
+ if(input.value.trim())performSearch();
+});
+// Each named tag corresponds to an identifiable source section/topic rather than an invented diagnosis.`);
 const bridge=/<script\s+id="ruqyah-v36-custom-canvas-bridge">[\s\S]*?<\/script>/gi;
 const frame=/<iframe\s+id="bookPdfFrame"[^>]*><\/iframe>/gi;
 const bridges=html.match(bridge)||[];
@@ -40,12 +78,21 @@ html=html.replace('</body>','<div id="toast" class="toast" role="status" aria-li
 html=html.replace("const wide=()=>window.matchMedia('(min-width: 1050px)').matches;","const wide=()=>false;");
 // Serve only the Arabic fonts a visitor selects instead of downloading every embedded font in HTML.
 mkdirSync('public/assets/ruqyah-fonts',{recursive:true});
+const offlineFonts=new Set();
 html=html.replace(/url\(data:font\/(woff2|ttf|otf|woff);base64,([A-Za-z0-9+/=]+)\)/g,(_,extension,encoded)=>{
  const bytes=Buffer.from(encoded,'base64');
  const filename=createHash('sha256').update(bytes).digest('hex').slice(0,16)+'.'+extension;
  writeFileSync('public/assets/ruqyah-fonts/'+filename,bytes);
  return 'url(./assets/ruqyah-fonts/'+filename+')';
 });
+// Both writing systems must also have their fonts available before the first offline switch.
+for(const family of ['AlQuran IndoPak','Native Uthmani','Ruqyah Hafs']){
+ const face=[...html.matchAll(/@font-face\{[^}]+\}/g)].find(m=>m[0].includes("font-family:'"+family+"'"));
+ const path=face?.[0].match(/url\(\.\/([^)]*)\)/)?.[1];
+ if(!path)throw new Error('Missing offline Arabic font: '+family);
+ offlineFonts.add(path);
+}
+writeFileSync('public/data/reader-fonts.json',JSON.stringify([...offlineFonts],null,2)+'\n');
 writeFileSync(target,html,'utf8');
 if(statSync(target).size<10000000)throw new Error('Built app unexpectedly small');
 writeFileSync('public/viewer-version.json',JSON.stringify({version:'v38',renderer:'direct-pdfjs-canvas',nativePdfIframe:false,build:'static-html'},null,2)+'\n','utf8');

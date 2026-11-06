@@ -15,7 +15,7 @@
   const h=document.createElement('h3');h.textContent=title;section.append(h,node);content.append(section);
  }
  block('পাঠের ধরন',document.querySelector('.reading-switcher'));
- block('আরবি ফন্ট',document.querySelector('.font-switcher'));
+ block('আরবি পাঠ ও ফন্ট',document.querySelector('.font-switcher'));
  const sizes=document.createElement('div');sizes.className='settings-font-size';
  sizes.innerHTML='<button type="button" class="button" id="settingsFontMinus" aria-label="আরবি লেখা ছোট করুন">A−</button><span>আরবি লেখার আকার</span><button type="button" class="button" id="settingsFontPlus" aria-label="আরবি লেখা বড় করুন">A+</button>';
  block('লেখার আকার',sizes);

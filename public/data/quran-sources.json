@@ -1,0 +1,22 @@
+{
+  "sourceRevision": "b519915d1bae271de13dfa06b53a9ea2ae81f851",
+  "exportedVerses": 649,
+  "sources": {
+    "uthmani": {
+      "database": "quran.db",
+      "sha256": "62460ff86b04d7bf2fcdb3b5493a4d0d15d5b345dc35718281c454afbc1f0da5",
+      "totalVerses": 6236,
+      "totalSurahs": 114,
+      "source": "https://github.com/arowabd-stack/greentech-quran-apk-/blob/b519915d1bae271de13dfa06b53a9ea2ae81f851/assets/databases/quran.db",
+      "payloadSha256": "bc63fba3365a084685a39d68d0c7119f337f00db9339c65a70212b533c1d8225"
+    },
+    "indopak": {
+      "database": "quran_indo.db",
+      "sha256": "db482b92208bf45a4b857a25a2386831bf872d7a65380b731c72b57fcb0b1dd3",
+      "totalVerses": 6236,
+      "totalSurahs": 114,
+      "source": "https://github.com/arowabd-stack/greentech-quran-apk-/blob/b519915d1bae271de13dfa06b53a9ea2ae81f851/assets/databases/quran_indo.db",
+      "payloadSha256": "aa4d2fb75c3e0d33044ccb7d2cfabcc39a2e1d2bcac8d7332479ce44ff9b34ea"
+    }
+  }
+}
