@@ -5,7 +5,7 @@
   "description": "রুকইয়াহ পাঠ এবং হিজামা সম্পর্কে প্রশ্ন, পরিচিতি ও সতর্কতা",
   "lang": "bn",
   "dir": "ltr",
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f6f9f6",
@@ -45,5 +45,16 @@
       "name": "হিজামা গাইড",
       "url": "./hijama-guide.html"
     }
-  ]
+  ],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "./manifest.webmanifest",
+      "id": "./"
+    }
+  ],
+  "prefer_related_applications": false
 }

@@ -2,8 +2,8 @@
 'use strict';
 try{if(window.top!==window.self)return}catch{return}
 const landing=document.body?.dataset?.pwaInstallLanding==='true'||location.pathname.endsWith('/install.html');
-const appUrl=new URL('./',location.href).href;
-const mode=window.matchMedia?.('(display-mode: standalone)');
+const appUrl=new URL('./index.html',location.href).href;
+const mode=window.matchMedia?.('(display-mode: standalone), (display-mode: minimal-ui), (display-mode: fullscreen), (display-mode: window-controls-overlay)');
 const standalone=()=>!!(mode?.matches||navigator.standalone===true);
 let deferredPrompt=null,installedHere=false,busy=false,installRequested=false,settling=false,settled=false,settleTimer=null;
 const knownInstalled=()=>standalone()||installedHere;
@@ -37,10 +37,12 @@ function openApp(){
  // require a real click; let Android resolve this site's installed handler.
  if(/Android/i.test(navigator.userAgent||'')){
   const url=new URL(appUrl);
-  location.assign('intent://'+url.host+url.pathname+'#Intent;scheme='+url.protocol.slice(0,-1)+';action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end');
+  try{location.assign('intent://'+url.host+url.pathname+'#Intent;scheme='+url.protocol.slice(0,-1)+';action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;S.browser_fallback_url='+encodeURIComponent(appUrl)+';end')}catch{location.replace(appUrl)}
   status('অ্যাপ না খুললে ইনস্টল শেষ হওয়া পর্যন্ত অপেক্ষা করুন, তারপর হোম স্ক্রিনের অ্যাপ আইকনে চাপুন।');
  }else{
-  status('হোম স্ক্রিন বা অ্যাপ তালিকার রুকইয়াহ আইকনে চাপুন। কম্পিউটারে Chrome-এর মেনু থেকে Open in app ব্যবহার করুন।');
+  // Desktop/Safari expose no portable PWA-launch API. Always make the
+  // button functional by leaving the install page for the real app home.
+  location.replace(appUrl);
  }
 }
 let launchDialog=null,launchFocus=null;
@@ -143,9 +145,23 @@ mode?.addEventListener?.('change',()=>{
  }
  sync();
 });
-window.addEventListener('pageshow',sync);
+window.addEventListener('pageshow',()=>{sync();checkInstalledLanding()});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
-function init(){sync();if(landing&&standalone())openApp()}
+async function checkInstalledLanding(){
+ if(!landing)return;
+ if(standalone()){openApp();return}
+ if(!navigator.getInstalledRelatedApps)return;
+ try{
+  const apps=await navigator.getInstalledRelatedApps();
+  const manifestUrl=new URL('./manifest.webmanifest',location.href).href;
+  if(apps.some(app=>app.platform==='webapp'&&app.url&&new URL(app.url,location.href).href===manifestUrl)){
+   // Installed-app detection is not a launch permission. Skip this landing
+   // without falsely persisting an installed flag after an uninstall.
+   location.replace(appUrl);
+  }
+ }catch{/* Older browsers may not support installation queries. */}
+}
+function init(){sync();checkInstalledLanding()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 window.openRuqyahInstall=install;
 })();

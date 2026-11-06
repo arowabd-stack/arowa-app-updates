@@ -2,6 +2,13 @@
 <html lang="bn">
 <head>
 <meta charset="utf-8">
+<script>
+// An installed app must never display the install/share landing, even before
+// its shared JS has loaded. replace() also removes this page from Back history.
+if(window.matchMedia('(display-mode: standalone), (display-mode: minimal-ui), (display-mode: fullscreen), (display-mode: window-controls-overlay)').matches||navigator.standalone===true){
+ document.documentElement.style.visibility='hidden';location.replace('./index.html');
+}
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#215b43">
 <meta name="description" content="রুকইয়াহ শরইয়্যাহ ও হিজামা গাইড অ্যাপটি আপনার ডিভাইসে ইনস্টল করুন।">
