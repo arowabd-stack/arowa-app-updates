@@ -49,7 +49,14 @@ test('both SQLite-derived sources survive fonts, tajweed, search, audio and note
     const audioKeys = audioNodes.map(n => n.dataset.audioKey);
     const entryIds = [...d.querySelectorAll('[data-entry-id]')].map(n => n.dataset.entryId);
     const book = d.getElementById('bookCanvasMount');
-    const select = key => {dropdown.value = key; dropdown.dispatchEvent(new w.Event('change', {bubbles: true}));};
+    const scriptSelect = d.getElementById('arabicScriptSelect');
+    const select = key => {
+      const script = ['uthmani','hafs'].includes(key) ? 'uthmani' : 'indopak';
+      if (scriptSelect.value !== script) {scriptSelect.value = script; scriptSelect.dispatchEvent(new w.Event('change', {bubbles: true}));}
+      if ([...dropdown.options].some(option => option.value === key)) {
+        dropdown.value = key; dropdown.dispatchEvent(new w.Event('change', {bubbles: true}));
+      }
+    };
     const checkSource = script => {
       assert.equal(d.documentElement.dataset.quranScript, script);
       for (const node of nodes) {
@@ -58,6 +65,12 @@ test('both SQLite-derived sources survive fonts, tajweed, search, audio and note
         assert.ok(node.isConnected);
       }
       assert.equal(d.querySelector('.font-example-arabic').textContent, w.RuqyahQuranSources[script]['1:1']);
+      assert.equal(d.getElementById('scripturePreview').textContent, w.RuqyahQuranSources[script]['1:6']);
+      assert.equal(d.getElementById('currentArabicScript').textContent.toLowerCase(), script);
+      const start = d.querySelector('.verified-verse[data-key="1:6"] .verified-arabic').textContent;
+      assert.equal(start.startsWith(script === 'indopak' ? '\u0627\u0650' : '\u0671'), true);
+      assert.equal(scriptSelect.value, script);
+      assert.equal([...dropdown.options].length, 2);
     };
     checkSource('indopak');
     for (const [font, script] of [['uthmani','uthmani'], ['noorehuda','indopak'], ['hafs','uthmani'], ['indopak','indopak']]) {
@@ -137,4 +150,28 @@ test('stored Uthmani preference and notes restore before tajweed/search initiali
 
 test('every font promised for offline use is emitted by the build', () => {
   for (const font of JSON.parse(read('public/data/reader-fonts.json'))) assert.ok(existsSync(path.join(root, 'public', font)));
+});
+
+test('initial HTML contains database Indopak diacritics even before scripts execute', () => {
+  const dom = new JSDOM(read('public/reader.html'));
+  try {
+    const payload = read('public/data/quran-indopak-v1.js');
+    const source = JSON.parse(payload.match(/window\.RuqyahQuranSources\.indopak=(\{[^\n]*\});/)[1]);
+    const nodes = [...dom.window.document.querySelectorAll('.verified-verse[data-key] .verified-arabic')];
+    assert.equal(nodes.length, 840);
+    for (const node of nodes) assert.equal(node.textContent, source[node.closest('.verified-verse').dataset.key]);
+    assert.ok(source['1:6'].startsWith('\u0627\u0650'));
+  } finally {dom.window.close();}
+});
+
+test('explicit script preference takes priority over a conflicting legacy font', async () => {
+  const {dom, errors, ready} = reader({'ruqyah-arabic-font-v8': 'uthmani', 'ruqyah-arabic-script-v1': 'indopak'});
+  await ready;
+  try {
+    const d = dom.window.document;
+    assert.equal(d.documentElement.dataset.quranScript, 'indopak');
+    assert.equal(d.getElementById('arabicFontSelect').value, 'noorehuda');
+    assert.equal(d.querySelector('.verified-verse[data-key="1:6"] .verified-arabic').textContent, dom.window.RuqyahQuranSources.indopak['1:6']);
+    assert.deepEqual(errors, []);
+  } finally {dom.window.close();}
 });

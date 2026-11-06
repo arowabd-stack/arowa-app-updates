@@ -15,7 +15,8 @@
   const h=document.createElement('h3');h.textContent=title;section.append(h,node);content.append(section);
  }
  block('পাঠের ধরন',document.querySelector('.reading-switcher'));
- block('আরবি পাঠ ও ফন্ট',document.querySelector('.font-switcher'));
+ block('আরবি পাঠ',document.querySelector('.script-switcher'));
+ block('আরবি ফন্ট',document.querySelector('.font-switcher'));
  const sizes=document.createElement('div');sizes.className='settings-font-size';
  sizes.innerHTML='<button type="button" class="button" id="settingsFontMinus" aria-label="আরবি লেখা ছোট করুন">A−</button><span>আরবি লেখার আকার</span><button type="button" class="button" id="settingsFontPlus" aria-label="আরবি লেখা বড় করুন">A+</button>';
  block('লেখার আকার',sizes);
@@ -29,6 +30,7 @@
  new MutationObserver(syncTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});syncTheme();
  block('পড়ার পরিবেশ',appearance);
  const open=document.createElement('button');open.type='button';open.id='readingSettingsOpen';open.className='reader-settings-open';open.setAttribute('aria-controls',dialog.id);open.setAttribute('aria-haspopup','dialog');open.setAttribute('aria-expanded','false');open.innerHTML=icon('settings-01')+'<span>পড়ার সেটিংস</span>';topbar.append(open);
+ const scriptBadge=document.createElement('span');scriptBadge.id='currentArabicScript';scriptBadge.className='current-arabic-script';scriptBadge.textContent=document.documentElement.dataset.quranScript==='uthmani'?'Uthmani':'Indopak';scriptBadge.setAttribute('aria-live','polite');open.prepend(scriptBadge);
  open.addEventListener('click',()=>{dialog.showModal();open.setAttribute('aria-expanded','true')});
  dialog.querySelector('.settings-heading button').addEventListener('click',()=>dialog.close());
  dialog.addEventListener('click',event=>{if(event.target===dialog){const b=dialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)dialog.close()}});
